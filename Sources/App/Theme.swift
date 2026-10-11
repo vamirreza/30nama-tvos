@@ -78,7 +78,7 @@ struct PillButtonStyle: ButtonStyle {
         Body(configuration: configuration, prominent: prominent)
     }
 
-    private struct Body: View {
+    struct Body: View {
         let configuration: ButtonStyleConfiguration
         let prominent: Bool
         @Environment(\.isFocused) private var focused
@@ -114,7 +114,7 @@ struct ChipButtonStyle: ButtonStyle {
         Body(configuration: configuration, on: on)
     }
 
-    private struct Body: View {
+    struct Body: View {
         let configuration: ButtonStyleConfiguration
         let on: Bool
         @Environment(\.isFocused) private var focused
@@ -143,7 +143,7 @@ struct PosterButtonStyle: ButtonStyle {
         Body(configuration: configuration, radius: radius)
     }
 
-    private struct Body: View {
+    struct Body: View {
         let configuration: ButtonStyleConfiguration
         let radius: CGFloat
         @Environment(\.isFocused) private var focused

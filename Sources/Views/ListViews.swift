@@ -31,8 +31,8 @@ struct ListView: View {
             VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: 6) {
-                        if let kicker { Text(kicker).font(.appCallout).foregroundStyle(.secondary) }
-                        Text(route.title).font(.appLargeTitle)
+                        if let kicker { Text(kicker).font(.appCallout).foregroundStyle(Theme.textDim) }
+                        PageTitle(text: route.title)
                     }
                     Spacer()
                     HStack(spacing: 20) {
@@ -46,6 +46,7 @@ struct ListView: View {
             .padding(.horizontal, Metrics.pagePad)
             .padding(.vertical, Metrics.pageVPad)
         }
+        .appBackground()
     }
 }
 
@@ -65,11 +66,12 @@ struct SearchView: View {
                     PagedGrid(empty: "نتیجه‌ای برای «\(query)» پیدا نشد") { page in try await API.search(query, page: page) }
                         .id(query)
                 } else {
-                    Text("دست‌کم سه حرف بنویسید.").foregroundStyle(.secondary).padding(Metrics.pagePad)
+                    EmptyState(icon: "magnifyingglass", text: "دست‌کم سه حرف بنویسید.")
                 }
             }
             .padding(.horizontal, Metrics.pagePad)
         }
+        .appBackground()
         .searchable(text: $text, prompt: "نام فیلم، سریال یا انیمه")
         .task(id: text) {
             try? await Task.sleep(nanoseconds: 450_000_000)
@@ -90,9 +92,10 @@ struct BrowseView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack {
-                    Text("دسته‌بندی‌ها").font(.appLargeTitle)
+                    PageTitle(text: "دسته‌بندی‌ها")
                     Spacer()
-                    NavigationLink(value: Route.filters) { Text("جستجوی پیشرفته") }
+                    NavigationLink(value: Route.filters) { Label("جستجوی پیشرفته", systemImage: "slider.horizontal.3") }
+                        .buttonStyle(.pillProminent)
                 }
                 .tvFocusSection()
                 if let m = menu {
@@ -101,12 +104,13 @@ struct BrowseView: View {
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {
-                    ProgressView().frame(maxWidth: .infinity).padding(Metrics.pagePad)
+                    ProgressView().tint(Theme.red).frame(maxWidth: .infinity).padding(Metrics.pagePad)
                 }
             }
             .padding(.horizontal, Metrics.pagePad)
             .padding(.vertical, Metrics.pageVPad)
         }
+        .appBackground()
         .task { if menu == nil { await load() } }
     }
 
@@ -121,7 +125,7 @@ struct BrowseView: View {
 
     private func tiles(_ title: String, _ items: [MenuItem]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text(title).font(.appTitle3Bold)
+            SectionHeader(title: title)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.tileMin, maximum: Metrics.tileMax), spacing: Metrics.gridGap)], spacing: Metrics.gridGap) {
                 ForEach(items) { m in
                     NavigationLink(value: Route.list(ListRoute(title: m.name, source: .archive(slug: m.slug)))) {
@@ -129,12 +133,12 @@ struct BrowseView: View {
                             AsyncImage(url: m.thumb) { image in
                                 image.resizable().scaledToFill()
                             } placeholder: {
-                                Color.white.opacity(0.1)
+                                LinearGradient(colors: [Theme.redDeep.opacity(0.7), Theme.card], startPoint: .topLeading, endPoint: .bottomTrailing)
                             }
                             .frame(width: Metrics.tileWidth, height: Metrics.tileHeight)
                             .clipped()
-                            LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .top, endPoint: .bottom)
-                            Text(m.name).font(.appTitle3Bold).padding(16)
+                            LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
+                            Text(m.name).font(.appTitle3Bold).shadow(color: .black.opacity(0.6), radius: 4).padding(16)
                         }
                         .frame(width: Metrics.tileWidth, height: Metrics.tileHeight)
                     }
@@ -189,13 +193,15 @@ struct FiltersView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack {
-                    Text("جستجوی پیشرفته").font(.appLargeTitle)
+                    PageTitle(text: "جستجوی پیشرفته")
                     Spacer()
                     HStack(spacing: 20) {
-                        NavigationLink(value: resultsRoute) { Text("نمایش نتایج") }
+                        NavigationLink(value: resultsRoute) { Label("نمایش نتایج", systemImage: "magnifyingglass") }
+                            .buttonStyle(.pillProminent)
                         Button("پاک کردن") {
                             types = []; genres = []; countries = []; rate = nil; decade = nil
                         }
+                        .buttonStyle(.pill)
                     }
                 }
                 .tvFocusSection()
@@ -210,12 +216,13 @@ struct FiltersView: View {
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {
-                    ProgressView().frame(maxWidth: .infinity).padding(Metrics.pagePad)
+                    ProgressView().tint(Theme.red).frame(maxWidth: .infinity).padding(Metrics.pagePad)
                 }
             }
             .padding(.horizontal, Metrics.pagePad)
             .padding(.vertical, Metrics.pageVPad)
         }
+        .appBackground()
         .task { if params == nil { await load() } }
     }
 
@@ -234,7 +241,7 @@ struct FiltersView: View {
 
     private func group(_ title: String, _ options: [Option], selected: @escaping (String) -> Bool, pick: @escaping (String) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(title).font(.appTitle3Bold)
+            SectionHeader(title: title)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.chipMin), spacing: 20)], alignment: .leading, spacing: 20) {
                 ForEach(options) { o in
                     ChipButton(label: o.name, on: selected(o.value)) { pick(o.value) }

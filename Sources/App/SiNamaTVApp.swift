@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @main
 struct SiNamaTVApp: App {
@@ -17,10 +18,8 @@ struct SiNamaTVApp: App {
                 .environment(\.locale, Locale(identifier: "fa"))
                 .preferredColorScheme(.dark)
                 .font(.appBody)
-                #if os(iOS)
-                .tint(.red)
-                .buttonStyle(.bordered)
-                #endif
+                .tint(Theme.red)
+                .buttonStyle(.pill)
         }
     }
 }
@@ -35,7 +34,7 @@ struct RootView: View {
             switch app.phase {
             case .needsKey: APIKeyView()
             case .loggedOut: LoginView()
-            case .loading: ProgressView()
+            case .loading: LaunchView()
             case .failed(let message): ErrorNote(message: message) { Task { await app.loadUser() } }
             case .ready: MainTabs()
             }
@@ -49,6 +48,16 @@ struct RootView: View {
 }
 
 struct MainTabs: View {
+    init() {
+        #if os(iOS)
+        let bar = UITabBarAppearance()
+        bar.configureWithOpaqueBackground()
+        bar.backgroundColor = UIColor(red: 0.043, green: 0.043, blue: 0.063, alpha: 0.96)
+        UITabBar.appearance().standardAppearance = bar
+        UITabBar.appearance().scrollEdgeAppearance = bar
+        #endif
+    }
+
     var body: some View {
         TabView {
             Nav { HomeView() }.tabItem { Label("خانه", systemImage: "house") }

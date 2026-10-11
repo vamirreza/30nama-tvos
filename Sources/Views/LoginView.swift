@@ -21,43 +21,60 @@ struct LoginView: View {
     @State private var state = Phase.loading
     @State private var attempt = 0
 
+    private func step(_ number: String, _ text: String) -> some View {
+        HStack(alignment: .top, spacing: 20) {
+            Text(number)
+                .font(.appHeadline)
+                .frame(width: Metrics.stepBadge, height: Metrics.stepBadge)
+                .background(Theme.red, in: Circle())
+            Text(text).font(.appBody).foregroundStyle(Color.white.opacity(0.88))
+        }
+    }
+
+    @ViewBuilder
+    private var statusLine: some View {
+        switch state {
+        case .code(let url, _): Text(url).font(.appCaption).foregroundStyle(Theme.textDim)
+        case .error(let m): Text(m).foregroundStyle(Theme.red)
+        case .loading: EmptyView()
+        }
+    }
+
     #if os(tvOS)
     private var tvBody: some View {
-        HStack(spacing: 100) {
-            VStack(alignment: .leading, spacing: 28) {
-                Text("سی‌نما").font(.appBrand).foregroundStyle(.red)
+        HStack(spacing: 110) {
+            VStack(alignment: .leading, spacing: 34) {
+                Logo(height: 120)
                 Text("ورود به حساب").font(.appTitle)
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("۱. با گوشی یا کامپیوتری که در سی‌نما وارد حساب‌تان شده‌اید، کد QR را اسکن کنید.")
-                    Text("۲. در صفحه‌ای که باز می‌شود، ورود این تلویزیون را تأیید کنید.")
+                VStack(alignment: .leading, spacing: 22) {
+                    step("۱", "با گوشی یا کامپیوتری که در سی‌نما وارد حساب‌تان شده‌اید، کد QR را اسکن کنید.")
+                    step("۲", "در صفحه‌ای که باز می‌شود، ورود این تلویزیون را تأیید کنید.")
                 }
-                .font(.appBody)
-                switch state {
-                case .code(let url, _): Text(url).font(.appCaption).foregroundStyle(.secondary)
-                case .error(let m): Text(m).foregroundStyle(.red)
-                case .loading: EmptyView()
-                }
+                statusLine
                 HStack(spacing: 24) {
-                    Button("کد جدید") { attempt += 1 }
-                    Button("تغییر کلید API") { app.phase = .needsKey }
+                    Button("کد جدید") { attempt += 1 }.buttonStyle(.pillProminent)
+                    Button("تغییر کلید API") { app.phase = .needsKey }.buttonStyle(.pill)
                 }
             }
-            .frame(maxWidth: 800, alignment: .leading)
+            .frame(maxWidth: 820, alignment: .leading)
 
             ZStack {
                 switch state {
                 case .code(_, let image):
                     if let image {
                         Image(uiImage: image).interpolation(.none).resizable().scaledToFit()
-                            .padding(24).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 20))
+                            .padding(28).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                            .shadow(color: Theme.red.opacity(0.45), radius: 60)
                     }
                 default:
-                    ProgressView()
+                    ProgressView().tint(Theme.red)
                 }
             }
             .frame(width: 520, height: 520)
         }
         .padding(Metrics.pagePad)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .appBackground()
     }
     #endif
 
@@ -67,36 +84,43 @@ struct LoginView: View {
     private var phoneBody: some View {
         VStack(spacing: Metrics.sectionGap) {
             Spacer()
-            Text("سی‌نما").font(.appBrand).foregroundStyle(.red)
-            Text("ورود به حساب").font(.appTitle)
-            Text("صفحهٔ سی‌نما را باز کنید، وارد حساب‌تان شوید و ورود این دستگاه را تأیید کنید.")
-                .font(.appBody)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-            switch state {
-            case .code(let url, _):
-                if let target = URL(string: url) {
-                    Button { safari = SafariTarget(url: target) } label: {
-                        Label("ورود با سی‌نما", systemImage: "person.badge.key").frame(maxWidth: 320)
+            Logo(height: 64)
+            Card {
+                VStack(spacing: 16) {
+                    Text("ورود به حساب").font(.appTitle2)
+                    Text("صفحهٔ سی‌نما را باز کنید، وارد حساب‌تان شوید و ورود این دستگاه را تأیید کنید.")
+                        .font(.appBody)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(Theme.textDim)
+                    switch state {
+                    case .code(let url, _):
+                        if let target = URL(string: url) {
+                            Button { safari = SafariTarget(url: target) } label: {
+                                Label("ورود با سی‌نما", systemImage: "person.badge.key").frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.pillProminent)
+                        }
+                    case .error(let m):
+                        Text(m).foregroundStyle(Theme.red).multilineTextAlignment(.center)
+                    case .loading:
+                        ProgressView().tint(Theme.red)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
                 }
-            case .error(let m):
-                Text(m).foregroundStyle(.red).multilineTextAlignment(.center)
-            case .loading:
-                ProgressView()
+                .frame(maxWidth: .infinity)
             }
             Spacer()
             HStack(spacing: 24) {
                 Button("کد جدید") { attempt += 1 }
                 Button("تغییر کلید API") { app.phase = .needsKey }
             }
+            .buttonStyle(.plain)
             .font(.appCallout)
+            .foregroundStyle(Theme.textDim)
         }
         .padding(Metrics.pagePad)
         .frame(maxWidth: 520)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .appBackground()
         .sheet(item: $safari) { SafariView(url: $0.url).ignoresSafeArea() }
     }
     #endif
@@ -147,16 +171,26 @@ struct APIKeyView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 30) {
-            Text("کلید API").font(.appLargeTitle)
-            Text("درخواست‌ها به یک c-api-key نیاز دارند؛ همان کلیدی که کلاینت وب رسمی تلویزیون سی‌نما (tv.30app.store) می‌فرستد. آن را از درخواست‌های شبکهٔ مرورگر بخوانید و اینجا وارد کنید. پیشنهاد می‌شود به‌جای تایپ روی تلویزیون، آن را هنگام ساخت برنامه در Config/Secrets.xcconfig بگذارید.")
-                .font(.appBody)
-            TextField("c-api-key", text: $key)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-            Button("ذخیره") { app.saveKey(key) }.disabled(key.trimmed.isEmpty)
+            Logo(height: Metrics.launchLogo)
+            Card {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("کلید API").font(.appTitle2)
+                    Text("درخواست‌ها به یک c-api-key نیاز دارند؛ همان کلیدی که کلاینت وب رسمی تلویزیون سی‌نما (tv.30app.store) می‌فرستد. آن را از درخواست‌های شبکهٔ مرورگر بخوانید و اینجا وارد کنید. پیشنهاد می‌شود به‌جای تایپ روی دستگاه، آن را هنگام ساخت برنامه در Config/Secrets.xcconfig بگذارید.")
+                        .font(.appBody)
+                        .foregroundStyle(Theme.textDim)
+                    TextField("c-api-key", text: $key)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Button("ذخیره") { app.saveKey(key) }
+                        .buttonStyle(.pillProminent)
+                        .disabled(key.trimmed.isEmpty)
+                }
+            }
         }
         .frame(maxWidth: 1100)
         .padding(Metrics.pagePad)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .appBackground()
     }
 }
 

@@ -8,7 +8,7 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: Metrics.rowVPad) {
                 if let hero = home?.hero.first { Hero(title: hero) }
                 TitleRow(title: "ادامه تماشا", items: continueList) { router.play($0.id) }
                 if let h = home {
@@ -20,10 +20,11 @@ struct HomeView: View {
                 }
                 if home == nil {
                     if let error { ErrorNote(message: error) { Task { await load() } } }
-                    else { ProgressView().frame(maxWidth: .infinity).padding(120) }
+                    else { LaunchView().frame(height: 600) }
                 }
             }
         }
+        .appBackground()
         .task { await load() }
     }
 
@@ -46,45 +47,62 @@ private struct Hero: View {
     @EnvironmentObject private var router: Router
     let title: Title
 
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            // The image fills an overlay, so its fill-scaled width cannot widen the page.
-            Color.clear
-                .frame(maxWidth: .infinity)
-                .frame(height: Metrics.heroHeight)
-                .overlay {
-                    AsyncImage(url: title.cover) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        Color.white.opacity(0.05)
-                    }
-                }
-                .clipped()
-
-            LinearGradient(colors: [.clear, .black.opacity(0.9)], startPoint: .top, endPoint: .bottom)
-
-            VStack(alignment: .leading, spacing: 18) {
-                Text(title.name).font(.appTitle).lineLimit(2)
-                MetaLine(parts: [
-                    title.year.map { "\($0)" } ?? "",
-                    title.imdb.map { "IMDb \($0)" } ?? "",
-                    title.age ?? "",
-                ])
-                if let plot = title.plot {
-                    Text(plot).font(.appBody).lineLimit(3).frame(maxWidth: Metrics.heroTextWidth, alignment: .leading)
-                }
-                HStack(spacing: 24) {
-                    if title.isSeries {
-                        NavigationLink(value: Route.title(title.id)) { Label("پخش", systemImage: "play.fill") }
-                    } else {
-                        Button { router.play(title.id) } label: { Label("پخش", systemImage: "play.fill") }
-                    }
-                    NavigationLink(value: Route.title(title.id)) { Text("جزئیات") }
-                }
+    private var backdrop: some View {
+        ZStack {
+            AsyncImage(url: title.cover) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                Theme.card
             }
-            .padding(Metrics.pagePad)
+            // Text side first, then a fade into the page so the rows below connect seamlessly.
+            LinearGradient(colors: [Theme.background.opacity(0.92), Theme.background.opacity(0.35), .clear], startPoint: .leading, endPoint: .trailing)
+            LinearGradient(stops: [
+                .init(color: .clear, location: 0.35),
+                .init(color: Theme.background.opacity(0.7), location: 0.75),
+                .init(color: Theme.background, location: 1),
+            ], startPoint: .top, endPoint: .bottom)
         }
-        .frame(height: Metrics.heroHeight)
-        .tvFocusSection()
+    }
+
+    private var playButton: some View {
+        Group {
+            if title.isSeries {
+                NavigationLink(value: Route.title(title.id)) { Label("پخش", systemImage: "play.fill") }
+            } else {
+                Button { router.play(title.id) } label: { Label("پخش", systemImage: "play.fill") }
+            }
+        }
+        .buttonStyle(.pillProminent)
+    }
+
+    var body: some View {
+        Color.clear
+            .frame(maxWidth: .infinity)
+            .frame(height: Metrics.heroHeight)
+            // The image fills an overlay, so its fill-scaled width cannot widen the page.
+            .overlay { backdrop }
+            .overlay(alignment: .topLeading) { Logo().padding(Metrics.heroLogoPad) }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: Metrics.itemSpacing) {
+                    Text(title.name).font(.appTitle).lineLimit(2)
+                    MetaBadges(title: title)
+                    if let plot = title.plot {
+                        Text(plot)
+                            .font(.appBody)
+                            .foregroundStyle(Color.white.opacity(0.85))
+                            .lineLimit(3)
+                            .frame(maxWidth: Metrics.heroTextWidth, alignment: .leading)
+                    }
+                    HStack(spacing: Metrics.itemSpacing) {
+                        playButton
+                        NavigationLink(value: Route.title(title.id)) { Label("جزئیات", systemImage: "info.circle") }
+                            .buttonStyle(.pill)
+                    }
+                    .padding(.top, 6)
+                }
+                .padding(Metrics.pagePad)
+            }
+            .clipped()
+            .tvFocusSection()
     }
 }

@@ -45,12 +45,9 @@ struct MyListView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
-                Text("لیست من").font(.appLargeTitle)
-                Picker("", selection: $tab) {
-                    ForEach(Tab.allCases) { Text($0.label).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .tvFocusSection()
+                PageTitle(text: "لیست من")
+                ChoiceRow(options: Tab.allCases, selection: tab, label: { $0.label }) { tab = $0 }
+                    .tvFocusSection()
 
                 PagedGrid(empty: tab.empty, onSelect: selectHandler, fetch: fetch(tab))
                 .id("\(tab.rawValue)-\(reload)")
@@ -58,6 +55,7 @@ struct MyListView: View {
             .padding(.horizontal, Metrics.pagePad)
             .padding(.vertical, Metrics.pageVPad)
         }
+        .appBackground()
         .navigationDestination(item: $detail) { TitleView(id: $0) }
         .confirmationDialog(
             picked.map { $0.name + ($0.episodeTitle.map { " · \($0)" } ?? "") } ?? "",
@@ -88,34 +86,39 @@ struct NotificationsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("اعلان‌ها").font(.appLargeTitle)
-                if let error { Text(error).foregroundStyle(.red) }
-                if loaded && items.isEmpty { Text("اعلان تازه‌ای ندارید.").foregroundStyle(.secondary) }
-                if !loaded && error == nil { ProgressView().frame(maxWidth: .infinity).padding(60) }
+            VStack(alignment: .leading, spacing: Metrics.itemSpacing) {
+                PageTitle(text: "اعلان‌ها").padding(.bottom, Metrics.itemSpacing)
+                if let error { Text(error).foregroundStyle(Theme.red) }
+                if loaded && items.isEmpty { EmptyState(icon: "bell.slash", text: "اعلان تازه‌ای ندارید.") }
+                if !loaded && error == nil { ProgressView().tint(Theme.red).frame(maxWidth: .infinity).padding(60) }
                 ForEach(items) { n in
                     Button { open(n) } label: {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text(n.title).font(.appHeadline)
-                                Spacer()
-                                Text(n.date).font(.appCaption).foregroundStyle(.secondary)
+                        HStack(alignment: .top, spacing: 16) {
+                            Circle()
+                                .fill(n.read ? Color.clear : Theme.red)
+                                .frame(width: 12, height: 12)
+                                .padding(.top, 10)
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text(n.title).font(.appHeadline)
+                                    Spacer()
+                                    Text(n.date).font(.appCaption).foregroundStyle(Theme.textDim)
+                                }
+                                if !n.text.isEmpty { Text(n.text).font(.appCallout).foregroundStyle(Theme.textDim) }
                             }
-                            if !n.text.isEmpty { Text(n.text).font(.appCallout).foregroundStyle(.secondary) }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(8)
+                        .padding(Metrics.cardPad)
+                        .background(Theme.card)
                     }
-                    #if os(iOS)
-                    .buttonStyle(.plain)
-                    .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
-                    #endif
-                    .opacity(n.read ? 0.7 : 1)
+                    .buttonStyle(PosterButtonStyle(radius: Theme.radius * 0.8))
+                    .opacity(n.read ? 0.75 : 1)
                 }
             }
             .padding(.horizontal, Metrics.pagePad)
             .padding(.vertical, Metrics.pageVPad)
         }
+        .appBackground()
         .navigationDestination(item: $detail) { TitleView(id: $0) }
         .task { await load() }
     }
@@ -153,25 +156,38 @@ struct ProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.sectionGap) {
-                Text("حساب و تنظیمات").font(.appLargeTitle)
+                PageTitle(text: "حساب و تنظیمات")
                 if let u = app.user { account(u) }
 
-                setting("زیرنویس پیش‌فرض", selection: $settings.subLang, options: SubLang.allCases) { $0.label }
-                setting("اندازه زیرنویس", selection: $settings.subSize, options: SubSize.allCases) { $0.label }
-                setting("صدا", selection: $settings.audio, options: AudioPref.allCases) { $0.label }
-                setting("کیفیت تصویر", selection: $settings.quality, options: Quality.allCases) { $0.label }
+                setting("زیرنویس پیش‌فرض", icon: "captions.bubble", options: SubLang.allCases, selection: settings.subLang, label: { $0.label }) { settings.subLang = $0 }
+                setting("اندازه زیرنویس", icon: "textformat.size", options: SubSize.allCases, selection: settings.subSize, label: { $0.label }) { settings.subSize = $0 }
+                setting("صدا", icon: "speaker.wave.2", options: AudioPref.allCases, selection: settings.audio, label: { $0.label }) { settings.audio = $0 }
+                setting("کیفیت تصویر", icon: "sparkles.tv", options: Quality.allCases, selection: settings.quality, label: { $0.label }) { settings.quality = $0 }
 
                 #if os(iOS)
                 NavigationLink(value: Route.notifications) {
                     Label("اعلان‌ها", systemImage: "bell").frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.pill)
                 #endif
 
-                Button("خروج از حساب") { confirmLogout = true }
+                HStack {
+                    Button { confirmLogout = true } label: { Label("خروج از حساب", systemImage: "rectangle.portrait.and.arrow.right") }
+                        .buttonStyle(.pill)
+                    Spacer()
+                }
+
+                VStack(spacing: 10) {
+                    Logo(height: Metrics.launchLogo * 0.6).opacity(0.7)
+                    Text("برنامهٔ غیررسمی سی‌نما").font(.appCaption).foregroundStyle(Theme.textDim)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, Metrics.sectionGap)
             }
             .padding(.horizontal, Metrics.pagePad)
             .padding(.vertical, Metrics.pageVPad)
         }
+        .appBackground()
         .confirmationDialog("از حساب سی‌نما در این دستگاه خارج شوید؟", isPresented: $confirmLogout, titleVisibility: .visible) {
             Button("خروج", role: .destructive) { Task { await app.logout() } }
             Button("انصراف", role: .cancel) {}
@@ -179,34 +195,39 @@ struct ProfileView: View {
     }
 
     private func account(_ u: User) -> some View {
-        HStack(spacing: 30) {
-            AsyncImage(url: u.avatar) { image in
-                image.resizable().scaledToFill()
-            } placeholder: {
-                Color.white.opacity(0.1)
-            }
-            .frame(width: Metrics.avatar, height: Metrics.avatar)
-            .clipShape(Circle())
+        Card {
+            HStack(spacing: 30) {
+                AsyncImage(url: u.avatar) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    ZStack {
+                        Theme.cardStrong
+                        Image(systemName: "person.fill").foregroundStyle(Theme.textDim)
+                    }
+                }
+                .frame(width: Metrics.avatar, height: Metrics.avatar)
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(Theme.red, lineWidth: 3))
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(u.name).font(.appTitle2)
-                MetaLine(parts: [
-                    "اشتراک \(plans[u.type] ?? u.type)",
-                    u.daysLeft.map { "\($0) روز باقی‌مانده" } ?? "",
-                    u.expiresOn.map { "تا \($0)" } ?? "",
-                ])
-                if !u.allowedToStream { Text("پخش آنلاین برای این حساب فعال نیست").foregroundStyle(.red) }
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(u.name).font(.appTitle2)
+                    HStack(spacing: 12) {
+                        Badge(text: "اشتراک \(plans[u.type] ?? u.type)", kind: .solid, icon: "crown.fill")
+                        if let d = u.daysLeft { Badge(text: "\(d) روز باقی‌مانده", kind: .glass) }
+                        if let e = u.expiresOn { Badge(text: "تا \(e)", kind: .glass) }
+                    }
+                    if !u.allowedToStream { Text("پخش آنلاین برای این حساب فعال نیست").font(.appCallout).foregroundStyle(Theme.red) }
+                }
             }
         }
     }
 
-    private func setting<T: Hashable>(_ title: String, selection: Binding<T>, options: [T], label: @escaping (T) -> String) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(title).font(.appTitle3Bold)
-            Picker(title, selection: selection) {
-                ForEach(options, id: \.self) { Text(label($0)).tag($0) }
+    private func setting<T: Hashable>(_ title: String, icon: String, options: [T], selection: T, label: @escaping (T) -> String, onPick: @escaping (T) -> Void) -> some View {
+        Card {
+            VStack(alignment: .leading, spacing: 18) {
+                Label(title, systemImage: icon).font(.appHeadline)
+                ChoiceRow(options: options, selection: selection, label: label, onPick: onPick)
             }
-            .pickerStyle(.segmented)
         }
         .tvFocusSection()
     }

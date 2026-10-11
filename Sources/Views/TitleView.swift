@@ -14,8 +14,9 @@ struct TitleView: View {
         ZStack {
             if let t = title { content(t) }
             else if let error { ErrorNote(message: error) { Task { await load() } } }
-            else { ProgressView() }
+            else { ProgressView().tint(Theme.red) }
         }
+        .background(AppBackground())
         .task { await load() }
         // Back from the player: the saved position has moved.
         .onChange(of: router.player == nil) { _, closed in
@@ -67,13 +68,16 @@ struct TitleView: View {
     // MARK: layout
 
     private func poster(_ t: Title) -> some View {
-        AsyncImage(url: t.posterLarge) { image in
+        let shape = RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
+        return AsyncImage(url: t.posterLarge) { image in
             image.resizable().scaledToFill()
         } placeholder: {
-            Color.white.opacity(0.08)
+            Theme.card
         }
         .frame(width: Metrics.titlePosterWidth, height: Metrics.titlePosterHeight)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(shape)
+        .overlay(shape.strokeBorder(Theme.stroke, lineWidth: 1))
+        .shadow(color: .black.opacity(0.55), radius: 30, y: 16)
     }
 
     @ViewBuilder
@@ -100,139 +104,187 @@ struct TitleView: View {
             }
             .padding(Metrics.pagePad)
         }
-        .background {
-            ZStack {
+        .background { backdrop(t) }
+    }
+
+    /// The cover fades out into the brand background instead of being dimmed flat.
+    private func backdrop(_ t: Title) -> some View {
+        ZStack(alignment: .top) {
+            AppBackground()
+            GeometryReader { geo in
                 AsyncImage(url: t.cover) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
                     Color.clear
                 }
-                Color.black.opacity(0.78)
+                .frame(width: geo.size.width, height: geo.size.height * 0.8, alignment: .top)
+                .clipped()
+                .overlay(LinearGradient(colors: [Theme.background.opacity(0.55), Theme.background], startPoint: .top, endPoint: .bottom))
+                .overlay(LinearGradient(colors: [Theme.background.opacity(0.8), .clear], startPoint: .leading, endPoint: .trailing))
             }
-            .ignoresSafeArea()
         }
+        .ignoresSafeArea()
     }
 
-    private func watchlistButton() -> some View {
+    private func watchlistButton(wide: Bool) -> some View {
         Button { toggle("watchlist") } label: {
             Label(lists.contains("watchlist", id) ? "در لیست تماشا" : "لیست تماشا", systemImage: lists.contains("watchlist", id) ? "checkmark" : "plus")
                 .lineLimit(1)
+                .frame(maxWidth: wide ? CGFloat.infinity : nil)
         }
+        .buttonStyle(.pill)
     }
 
-    private func favoriteButton() -> some View {
+    private func favoriteButton(wide: Bool) -> some View {
         Button { toggle("favorite") } label: {
             Label("علاقه‌مندی", systemImage: lists.contains("favorite", id) ? "heart.fill" : "heart")
                 .lineLimit(1)
+                .frame(maxWidth: wide ? CGFloat.infinity : nil)
         }
+        .buttonStyle(.pill)
     }
 
     @ViewBuilder
     private func actions(_ t: Title) -> some View {
         #if os(tvOS)
         HStack(spacing: 24) {
-            playButton(t)
-            watchlistButton()
-            favoriteButton()
+            playButton(t, wide: false)
+            watchlistButton(wide: false)
+            favoriteButton(wide: false)
         }
         #else
         VStack(spacing: 10) {
-            playButton(t)
-                .buttonStyle(.borderedProminent)
-                .frame(maxWidth: .infinity)
+            playButton(t, wide: true)
             HStack(spacing: 10) {
-                watchlistButton().frame(maxWidth: .infinity)
-                favoriteButton().frame(maxWidth: .infinity)
+                watchlistButton(wide: true)
+                favoriteButton(wide: true)
             }
         }
-        .controlSize(.large)
         #endif
     }
 
     private func info(_ t: Title) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             Text(t.name).font(.appTitleLarge)
-            if t.local != nil { Text(t.english).font(.appTitle3).foregroundStyle(.secondary) }
-            MetaLine(parts: [
-                t.year.map { y in "\(y)" + (t.yearEnd.map { "–\($0)" } ?? "") } ?? "",
-                t.minutes.map { "\($0) دقیقه" } ?? "",
-                t.age ?? "",
-                t.imdb.map { "IMDb \($0)" } ?? "",
-                t.nama30.map { "سی‌نما \($0)" } ?? "",
-                t.persianSubtitle ? "زیرنویس فارسی" : "",
-            ])
-            if !t.genres.isEmpty { Text(t.genres.joined(separator: "، ")).font(.appCallout).foregroundStyle(.secondary) }
-            if let plot = t.plot { Text(plot).font(.appBody).lineLimit(6) }
+            if t.local != nil { Text(t.english).font(.appTitle3).foregroundStyle(Theme.textDim) }
+            MetaBadges(title: t)
+            if !t.genres.isEmpty { genres(t.genres) }
+            if let plot = t.plot { Text(plot).font(.appBody).foregroundStyle(Color.white.opacity(0.88)).lineLimit(6) }
             if let date = t.nextEpisodeDate {
-                Text("\(t.nextEpisodeCaption ?? ""): \(date)").font(.appCallout).foregroundStyle(.secondary)
+                Label("\(t.nextEpisodeCaption ?? ""): \(date)", systemImage: "calendar")
+                    .font(.appCallout)
+                    .foregroundStyle(Theme.textDim)
             }
             actions(t)
-            .padding(.top, 10)
+                .padding(.top, 10)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private func genres(_ list: [String]) -> some View {
+        let row = HStack(spacing: Metrics.itemSpacing) {
+            ForEach(list, id: \.self) { g in
+                Text(g)
+                    .font(.appCallout)
+                    .padding(.horizontal, Theme.chipH).padding(.vertical, Theme.chipV / 2)
+                    .background(Theme.card, in: Capsule())
+                    .overlay(Capsule().strokeBorder(Theme.stroke, lineWidth: 1))
+            }
+        }
+        return ViewThatFits(in: .horizontal) {
+            row
+            ScrollView(.horizontal, showsIndicators: false) { row }
+        }
+    }
+
     @ViewBuilder
-    private func playButton(_ t: Title) -> some View {
+    private func playButton(_ t: Title, wide: Bool) -> some View {
+        let width: CGFloat? = wide ? CGFloat.infinity : nil
         if t.canStream {
             if let r = stream?.resume, r.time > 0 {
-                Button { router.play(id, fileId: r.fileId) } label: { Label("ادامه \(r.episodeName ?? "")", systemImage: "play.fill") }
-                    .focused($playFocused)
+                Button { router.play(id, fileId: r.fileId) } label: {
+                    Label("ادامه \(r.episodeName ?? "")", systemImage: "play.fill").frame(maxWidth: width)
+                }
+                .buttonStyle(.pillProminent)
+                .focused($playFocused)
             } else {
-                Button { router.play(id) } label: { Label("پخش", systemImage: "play.fill") }
-                    .focused($playFocused)
+                Button { router.play(id) } label: {
+                    Label("پخش", systemImage: "play.fill").frame(maxWidth: width)
+                }
+                .buttonStyle(.pillProminent)
+                .focused($playFocused)
             }
         } else {
-            Button(t.comingSoon ? "به‌زودی" : "پخش آنلاین ندارد") {}.disabled(true)
+            Button(t.comingSoon ? "به‌زودی" : "پخش آنلاین ندارد") {}
+                .buttonStyle(.pill)
+                .disabled(true)
         }
     }
 
     private func people(_ t: Title) -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 20) {
-                ForEach(Array(t.directors.prefix(2).enumerated()), id: \.offset) { _, p in
-                    personLink(p, role: "director", label: "کارگردان: \(p.name)")
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "بازیگران و سازندگان")
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: Metrics.itemSpacing) {
+                    ForEach(Array(t.directors.prefix(2).enumerated()), id: \.offset) { _, p in
+                        personLink(p, role: "director", label: "کارگردان: \(p.name)", icon: "megaphone.fill")
+                    }
+                    ForEach(Array(t.cast.prefix(5).enumerated()), id: \.offset) { _, p in
+                        personLink(p, role: "actor", label: p.name, icon: "person.fill")
+                    }
                 }
-                ForEach(Array(t.cast.prefix(5).enumerated()), id: \.offset) { _, p in
-                    personLink(p, role: "actor", label: p.name)
-                }
+                .padding(.vertical, 16)
             }
-            .padding(.vertical, 20)
+            .rowClipDisabled()
         }
-        .rowClipDisabled()
         .tvFocusSection()
     }
 
-    private func personLink(_ p: Person, role: String, label: String) -> some View {
+    private func personLink(_ p: Person, role: String, label: String, icon: String) -> some View {
         NavigationLink(value: Route.list(ListRoute(title: p.name, source: .person(role: role, name: p.name, imdb: p.imdb)))) {
-            Text(label)
+            Label(label, systemImage: icon)
         }
+        .buttonStyle(ChipButtonStyle())
+    }
+
+    private func episodeCard(_ e: StreamItem) -> some View {
+        let isResume = stream?.resume?.fileId == e.fileId
+        return Button { router.play(id, fileId: e.fileId) } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(e.episodeLabel).font(.appTitle2).foregroundStyle(Theme.red)
+                    Spacer()
+                    Image(systemName: isResume ? "play.circle.fill" : "play.circle")
+                        .font(.appTitle3)
+                        .foregroundStyle(isResume ? Theme.red : Theme.textDim)
+                }
+                Text(e.episodeName ?? "").font(.appCaption).lineLimit(2).foregroundStyle(Color.white.opacity(0.85))
+                Spacer(minLength: 0)
+            }
+            .padding(Metrics.cardPad * 0.6)
+            .frame(width: Metrics.episodeWidth, height: Metrics.episodeHeight, alignment: .topLeading)
+            .background(Theme.card)
+        }
+        .buttonStyle(PosterButtonStyle(radius: Theme.radius * 0.8))
     }
 
     private var episodes: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "قسمت‌ها")
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 20) {
+                LazyHStack(spacing: Metrics.itemSpacing) {
                     ForEach(seasonKeys, id: \.self) { s in
                         ChipButton(label: "فصل \(s)", on: s == currentSeason) { season = s }
                     }
                 }
-                .padding(.vertical, 20)
+                .padding(.vertical, 12)
             }
             .rowClipDisabled()
             .tvFocusSection()
 
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 20) {
-                    ForEach(seasons[currentSeason] ?? []) { e in
-                        Button { router.play(id, fileId: e.fileId) } label: {
-                            VStack(spacing: 8) {
-                                Text(e.episodeLabel).font(.appTitle2)
-                                Text(e.episodeName ?? "").font(.appCaption).lineLimit(2)
-                            }
-                            .frame(width: Metrics.episodeWidth, height: Metrics.episodeHeight)
-                        }
-                    }
+                LazyHStack(spacing: Metrics.rowGap) {
+                    ForEach(seasons[currentSeason] ?? []) { e in episodeCard(e) }
                 }
                 .padding(.vertical, 20)
             }

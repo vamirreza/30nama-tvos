@@ -16,6 +16,7 @@ targets:
       - path: Sources
       - path: Resources/Fonts
       - path: Resources/tvOS
+      - path: Resources/Shared
     info:
       path: Config/Info.plist
       properties:
@@ -49,6 +50,7 @@ targets:
       - path: Sources
       - path: Resources/Fonts
       - path: Resources/iOS
+      - path: Resources/Shared
     info:
       path: Config/Info-iOS.plist
       properties:

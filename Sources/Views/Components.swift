@@ -56,26 +56,50 @@ struct PosterCell: View {
         AsyncImage(url: title.posterMedium) { image in
             image.resizable().scaledToFill()
         } placeholder: {
-            Color.white.opacity(0.08)
+            ZStack {
+                Theme.card
+                LogoMark(height: width * 0.3).opacity(0.25)
+            }
         }
         .frame(width: width, height: width * 1.5)
         .clipped()
         .overlay(alignment: .bottom) {
             if title.progress > 0 {
                 ProgressView(value: min(1, title.progress / 100))
-                    .tint(.red)
-                    .padding(10)
+                    .tint(Theme.red)
+                    .padding(.horizontal, 12).padding(.bottom, 12).padding(.top, 30)
+                    .background(LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom))
             }
         }
         .overlay(alignment: .topLeading) {
             if title.persianSubtitle {
-                Text("زیرنویس")
+                Image(systemName: "captions.bubble.fill")
                     .font(.appCaption2Bold)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(Color.black.opacity(0.7), in: Capsule())
-                    .padding(10)
+                    .padding(8)
+                    .background(.black.opacity(0.65), in: Circle())
+                    .padding(8)
             }
         }
+    }
+
+    private var caption: some View {
+        VStack(spacing: 4) {
+            Text(title.name).font(.appCalloutMedium).lineLimit(1)
+            if let sub = title.episodeTitle {
+                Text(sub).font(.appCaption).foregroundStyle(Theme.textDim).lineLimit(1)
+            } else if title.imdb != nil || title.year != nil {
+                HStack(spacing: 6) {
+                    if let s = title.imdb {
+                        Image(systemName: "star.fill").foregroundStyle(Theme.gold)
+                        Text(String(format: "%.1f", s))
+                    }
+                    if let y = title.year { Text("\(y)") }
+                }
+                .font(.appCaption)
+                .foregroundStyle(Theme.textDim)
+            }
+        }
+        .frame(width: width)
     }
 
     var body: some View {
@@ -85,11 +109,7 @@ struct PosterCell: View {
             } else {
                 NavigationLink(value: Route.title(title.id)) { poster }.posterButtonStyle()
             }
-            VStack(spacing: 4) {
-                Text(title.name).font(.appCalloutMedium).lineLimit(1)
-                if let sub = title.episodeTitle { Text(sub).font(.appCaption).foregroundStyle(.secondary).lineLimit(1) }
-            }
-            .frame(width: width)
+            caption
         }
         .frame(width: width)
     }
@@ -108,7 +128,7 @@ struct TitleRow: View {
     var body: some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                Text(title).font(.appTitle3Bold).padding(.horizontal, Metrics.pagePad)
+                SectionHeader(title: title).padding(.horizontal, Metrics.pagePad)
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: Metrics.rowGap) {
                         ForEach(Array(items.enumerated()), id: \.offset) { _, t in
@@ -181,10 +201,10 @@ struct PagedGrid: View {
             LazyVGrid(columns: columns, spacing: Metrics.gridRowGap) {
                 ForEach(Array(loader.items.enumerated()), id: \.offset) { i, t in cell(i, t) }
             }
-            if loader.isLoading { ProgressView().padding(40) }
-            if let e = loader.error { Text(e).foregroundStyle(.red) }
+            if loader.isLoading { ProgressView().tint(Theme.red).padding(40) }
+            if let e = loader.error { Text(e).foregroundStyle(Theme.red) }
             if loader.items.isEmpty && !loader.isLoading && loader.error == nil && loader.finished {
-                Text(empty).foregroundStyle(.secondary).padding(40)
+                EmptyState(icon: "film.stack", text: empty)
             }
         }
         .task { if loader.items.isEmpty { await loader.loadMore() } }
@@ -198,7 +218,31 @@ struct MetaLine: View {
     var body: some View {
         Text(parts.filter { !$0.isEmpty }.joined(separator: "  ·  "))
             .font(.appCallout)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Theme.textDim)
+    }
+}
+
+/// A large page heading with the red accent bar.
+struct PageTitle: View {
+    let text: String
+    var body: some View {
+        HStack(spacing: 18) {
+            Capsule().fill(Theme.red).frame(width: Metrics.accentWidth, height: Metrics.accentHeight * 1.4)
+            Text(text).font(.appLargeTitle)
+        }
+    }
+}
+
+struct EmptyState: View {
+    let icon: String
+    let text: String
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: icon).font(.system(size: Metrics.emptyIcon)).foregroundStyle(Theme.red.opacity(0.8))
+            Text(text).font(.appBody).foregroundStyle(Theme.textDim).multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(Metrics.pagePad)
     }
 }
 
@@ -207,14 +251,28 @@ struct ErrorNote: View {
     var retry: (() -> Void)?
     var body: some View {
         VStack(spacing: 24) {
-            Text(message).foregroundStyle(.red).multilineTextAlignment(.center)
-            if let retry { Button("تلاش دوباره", action: retry) }
+            Image(systemName: "exclamationmark.triangle.fill").font(.system(size: Metrics.emptyIcon)).foregroundStyle(Theme.red)
+            Text(message).font(.appBody).multilineTextAlignment(.center)
+            if let retry { Button("تلاش دوباره", action: retry).buttonStyle(.pillProminent) }
         }
+        .frame(maxWidth: .infinity)
         .padding(Metrics.pagePad)
     }
 }
 
-/// Chip that shows a check while on; used for filters and tabs.
+/// Splash and loading state: the logo over the brand background.
+struct LaunchView: View {
+    var body: some View {
+        VStack(spacing: 40) {
+            Logo(height: Metrics.launchLogo)
+            ProgressView().tint(Theme.red)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .appBackground()
+    }
+}
+
+/// Chip that shows a check while on; used for filters, tabs and settings.
 struct ChipButton: View {
     let label: String
     var on: Bool = false
@@ -223,5 +281,6 @@ struct ChipButton: View {
         Button(action: action) {
             if on { Label(label, systemImage: "checkmark") } else { Text(label) }
         }
+        .buttonStyle(ChipButtonStyle(on: on))
     }
 }

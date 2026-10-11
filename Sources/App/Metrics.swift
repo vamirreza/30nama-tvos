@@ -17,8 +17,8 @@ enum Metrics {
     static let sectionGap: CGFloat = 40
     static let titlePosterWidth: CGFloat = 360
     static let titlePosterHeight: CGFloat = 540
-    static let episodeWidth: CGFloat = 240
-    static let episodeHeight: CGFloat = 120
+    static let episodeWidth: CGFloat = 320
+    static let episodeHeight: CGFloat = 150
     static let tileWidth: CGFloat = 300
     static let tileHeight: CGFloat = 170
     static let tileMin: CGFloat = 300
@@ -26,6 +26,16 @@ enum Metrics {
     static let chipMin: CGFloat = 200
     static let avatar: CGFloat = 120
     static let itemSpacing: CGFloat = 24
+    static let accentWidth: CGFloat = 8
+    static let accentHeight: CGFloat = 38
+    static let badgeH: CGFloat = 14
+    static let badgeV: CGFloat = 6
+    static let badgeGap: CGFloat = 16
+    static let cardPad: CGFloat = 36
+    static let heroLogoPad: CGFloat = 60
+    static let stepBadge: CGFloat = 52
+    static let emptyIcon: CGFloat = 64
+    static let launchLogo: CGFloat = 130
     #else
     static let pagePad: CGFloat = 16
     static let pageVPad: CGFloat = 12
@@ -41,34 +51,36 @@ enum Metrics {
     static let sectionGap: CGFloat = 22
     static let titlePosterWidth: CGFloat = 150
     static let titlePosterHeight: CGFloat = 225
-    static let episodeWidth: CGFloat = 130
-    static let episodeHeight: CGFloat = 64
+    static let episodeWidth: CGFloat = 150
+    static let episodeHeight: CGFloat = 78
     static let tileWidth: CGFloat = 160
     static let tileHeight: CGFloat = 90
     static let tileMin: CGFloat = 150
     static let tileMax: CGFloat = 260
     static let chipMin: CGFloat = 96
     static let avatar: CGFloat = 64
-    static let itemSpacing: CGFloat = 12
+    static let itemSpacing: CGFloat = 10
+    static let accentWidth: CGFloat = 4
+    static let accentHeight: CGFloat = 20
+    static let badgeH: CGFloat = 8
+    static let badgeV: CGFloat = 3
+    static let badgeGap: CGFloat = 10
+    static let cardPad: CGFloat = 16
+    static let heroLogoPad: CGFloat = 14
+    static let stepBadge: CGFloat = 32
+    static let emptyIcon: CGFloat = 40
+    static let launchLogo: CGFloat = 56
     #endif
 }
 
 extension View {
     /// Poster/tile buttons draw their own artwork, so they take no button chrome.
     func posterButtonStyle() -> some View {
-        #if os(tvOS)
-        buttonStyle(.borderless)
-        #else
-        buttonStyle(.plain)
-        #endif
+        buttonStyle(.poster)
     }
 
     func tileButtonStyle() -> some View {
-        #if os(tvOS)
-        buttonStyle(.card)
-        #else
-        buttonStyle(.plain)
-        #endif
+        buttonStyle(.poster)
     }
 
     /// Lets a horizontal row's focus/hover scale spill past its bounds on tvOS only.

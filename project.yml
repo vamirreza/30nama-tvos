@@ -90,6 +90,18 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.vamirreza.sinama.tv.uitests
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: YES
+  SiNamaPhoneUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITestsPhone
+    dependencies:
+      - target: SiNamaPhone
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vamirreza.sinama.phone.uitests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   SiNamaTV:
     build:
@@ -106,6 +118,9 @@ schemes:
     build:
       targets:
         SiNamaPhone: all
+    test:
+      targets:
+        - SiNamaPhoneUITests
     run:
       config: Debug
     archive:

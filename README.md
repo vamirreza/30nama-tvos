@@ -71,20 +71,40 @@ button shows, the next episode starts by itself after 10 seconds of playback; ch
   list the HLS variants, so there is no per-variant picker.
 - The session token is kept in the keychain.
 
+## iPhone and iPad
+
+The `SiNamaPhone` scheme builds the same code as an iPhone/iPad app (iOS 17+): `xcodegen generate`,
+open `SiNamaTV.xcodeproj`, pick the `SiNamaPhone` scheme. Layout sizes live in
+`Sources/App/Metrics.swift`; the few places that differ use `#if os(tvOS)`.
+
+- **Sign in** opens the 30nama approval page in an in-app Safari sheet (you cannot scan your own
+  screen). Log in there if asked and approve; the app picks the session up on its own.
+- **Player** is the system player with a small overlay of its own: close, a menu (episodes,
+  subtitles, quality) and the skip-intro / next-episode buttons. Picture in Picture and background
+  audio are on.
+- Notifications live under the Account tab.
+- The iPhone app presents itself to the API with the same client key as the TV client, so it needs
+  the same `API_KEY`.
+
 ## Known gaps
 
-This port was written without access to a Mac, so treat the first build as unverified:
-
-- **It has not been compiled or run on a device.** `.github/workflows/build.yml` builds it on a
-  macOS runner (`xcodegen` + `xcodebuild` for the tvOS Simulator); fix anything it reports.
 - **5.1 audio selection is a guess.** AVFoundation does not expose channel counts for HLS audio
   groups, so the stereo/5.1 setting matches the audio option's display name ("5.1", "surround").
-  If the stream's groups are not named like that, the system's default pick is used.
-- **Cloudflare** sits in front of the API. The Chromium TV runtimes pass it; `URLSession` may not.
-  If the login screen shows «سرور سی‌نما درخواست را مسدود کرد», that is why.
-- The app icon and top-shelf image are generated placeholders (a red play disc and the wordmark);
-  replace the layers in `Resources/Assets.xcassets` with real artwork before shipping beyond your own TV.
+  If the stream's groups are not named like that, the system's default pick is used. Not testable
+  in the simulator.
+- **Cloudflare** sits in front of the API. `URLSession` passes it today; if it ever starts
+  blocking, the login screen shows «سرور سی‌نما درخواست را مسدود کرد».
+- The app icons and top-shelf image are generated placeholders (a red play disc and the wordmark);
+  replace the artwork in `Resources/tvOS/Assets.xcassets` and `Resources/iOS/Assets.xcassets`
+  before shipping beyond your own devices.
 - The UI font is Vazirmatn (SIL OFL, `Resources/Fonts/OFL.txt`), bundled in `Resources/Fonts`.
+- The tvOS system player also shows its own subtitle button next to ours.
+
+## Testing
+
+`UITests` (tvOS) and `UITestsPhone` (iOS) are XCUITest tours that press the remote or tap, and save
+screenshots to `$SHOT_DIR` (default `/private/tmp/claude-502/shots` and `.../phone-shots`). They need a
+signed-in simulator for everything past the login screen.
 
 ## How it works
 

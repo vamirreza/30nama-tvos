@@ -119,4 +119,14 @@ final class TourTests: XCTestCase {
         press(.menu)
         shot("37-closed", wait: 3)
     }
+
+    /// Starts the first Continue Watching title and leaves it alone, so playback state can be inspected.
+    func testPlayUntouched() {
+        let app = XCUIApplication()
+        app.launch()
+        shot("40-home", wait: 6)
+        press(.down, 2)
+        press(.select)
+        shot("41-player", wait: 30)
+    }
 }

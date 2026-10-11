@@ -45,7 +45,7 @@ struct MyListView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
-                Text("لیست من").font(.largeTitle.bold())
+                Text("لیست من").font(.appLargeTitle)
                 Picker("", selection: $tab) {
                     ForEach(Tab.allCases) { Text($0.label).tag($0) }
                 }
@@ -65,7 +65,7 @@ struct MyListView: View {
             titleVisibility: .visible
         ) {
             if let t = picked {
-                Button("▶ ادامه پخش") { router.play(t.id) }
+                Button { router.play(t.id) } label: { Label("ادامه پخش", systemImage: "play.fill") }
                 Button("جزئیات") { detail = t.id }
                 Button("حذف از ادامه تماشا", role: .destructive) {
                     Task {
@@ -89,7 +89,7 @@ struct NotificationsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                Text("اعلان‌ها").font(.largeTitle.bold())
+                Text("اعلان‌ها").font(.appLargeTitle)
                 if let error { Text(error).foregroundStyle(.red) }
                 if loaded && items.isEmpty { Text("اعلان تازه‌ای ندارید.").foregroundStyle(.secondary) }
                 if !loaded && error == nil { ProgressView().frame(maxWidth: .infinity).padding(60) }
@@ -97,11 +97,11 @@ struct NotificationsView: View {
                     Button { open(n) } label: {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text(n.title).font(.headline)
+                                Text(n.title).font(.appHeadline)
                                 Spacer()
-                                Text(n.date).font(.caption).foregroundStyle(.secondary)
+                                Text(n.date).font(.appCaption).foregroundStyle(.secondary)
                             }
-                            if !n.text.isEmpty { Text(n.text).font(.callout).foregroundStyle(.secondary) }
+                            if !n.text.isEmpty { Text(n.text).font(.appCallout).foregroundStyle(.secondary) }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
@@ -149,7 +149,7 @@ struct ProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 36) {
-                Text("حساب و تنظیمات").font(.largeTitle.bold())
+                Text("حساب و تنظیمات").font(.appLargeTitle)
                 if let u = app.user { account(u) }
 
                 setting("زیرنویس پیش‌فرض", selection: $settings.subLang, options: SubLang.allCases) { $0.label }
@@ -179,7 +179,7 @@ struct ProfileView: View {
             .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 8) {
-                Text(u.name).font(.title2.bold())
+                Text(u.name).font(.appTitle2)
                 MetaLine(parts: [
                     "اشتراک \(plans[u.type] ?? u.type)",
                     u.daysLeft.map { "\($0) روز باقی‌مانده" } ?? "",
@@ -192,7 +192,7 @@ struct ProfileView: View {
 
     private func setting<T: Hashable>(_ title: String, selection: Binding<T>, options: [T], label: @escaping (T) -> String) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(title).font(.title3.bold())
+            Text(title).font(.appTitle3Bold)
             Picker(title, selection: selection) {
                 ForEach(options, id: \.self) { Text(label($0)).tag($0) }
             }

@@ -21,15 +21,15 @@ struct LoginView: View {
     var body: some View {
         HStack(spacing: 100) {
             VStack(alignment: .leading, spacing: 28) {
-                Text("سی‌نما").font(.system(size: 80, weight: .heavy)).foregroundStyle(.red)
-                Text("ورود به حساب").font(.title.bold())
+                Text("سی‌نما").font(.vazir(80, .heavy)).foregroundStyle(.red)
+                Text("ورود به حساب").font(.appTitle)
                 VStack(alignment: .leading, spacing: 14) {
                     Text("۱. با گوشی یا کامپیوتری که در سی‌نما وارد حساب‌تان شده‌اید، کد QR را اسکن کنید.")
                     Text("۲. در صفحه‌ای که باز می‌شود، ورود این تلویزیون را تأیید کنید.")
                 }
-                .font(.body)
+                .font(.appBody)
                 switch state {
-                case .code(let url, _): Text(url).font(.caption).foregroundStyle(.secondary)
+                case .code(let url, _): Text(url).font(.appCaption).foregroundStyle(.secondary)
                 case .error(let m): Text(m).foregroundStyle(.red)
                 case .loading: EmptyView()
                 }
@@ -92,9 +92,9 @@ struct APIKeyView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 30) {
-            Text("کلید API").font(.largeTitle.bold())
+            Text("کلید API").font(.appLargeTitle)
             Text("درخواست‌ها به یک c-api-key نیاز دارند؛ همان کلیدی که کلاینت وب رسمی تلویزیون سی‌نما (tv.30app.store) می‌فرستد. آن را از درخواست‌های شبکهٔ مرورگر بخوانید و اینجا وارد کنید. پیشنهاد می‌شود به‌جای تایپ روی تلویزیون، آن را هنگام ساخت برنامه در Config/Secrets.xcconfig بگذارید.")
-                .font(.body)
+                .font(.appBody)
             TextField("c-api-key", text: $key)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()

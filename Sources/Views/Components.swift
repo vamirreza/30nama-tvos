@@ -68,7 +68,7 @@ struct PosterCell: View {
         .overlay(alignment: .topLeading) {
             if title.persianSubtitle {
                 Text("زیرنویس")
-                    .font(.caption2.bold())
+                    .font(.appCaption2Bold)
                     .padding(.horizontal, 10).padding(.vertical, 4)
                     .background(Color.black.opacity(0.7), in: Capsule())
                     .padding(10)
@@ -84,8 +84,8 @@ struct PosterCell: View {
                 NavigationLink(value: Route.title(title.id)) { poster }.buttonStyle(.borderless)
             }
             VStack(spacing: 4) {
-                Text(title.name).font(.callout.weight(.medium)).lineLimit(1)
-                if let sub = title.episodeTitle { Text(sub).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+                Text(title.name).font(.appCalloutMedium).lineLimit(1)
+                if let sub = title.episodeTitle { Text(sub).font(.appCaption).foregroundStyle(.secondary).lineLimit(1) }
             }
             .frame(width: width)
         }
@@ -106,7 +106,7 @@ struct TitleRow: View {
     var body: some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                Text(title).font(.title3.bold()).padding(.horizontal, 80)
+                Text(title).font(.appTitle3Bold).padding(.horizontal, 80)
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 40) {
                         ForEach(Array(items.enumerated()), id: \.offset) { _, t in
@@ -195,7 +195,7 @@ struct MetaLine: View {
     let parts: [String]
     var body: some View {
         Text(parts.filter { !$0.isEmpty }.joined(separator: "  ·  "))
-            .font(.callout)
+            .font(.appCallout)
             .foregroundStyle(.secondary)
     }
 }
@@ -218,6 +218,8 @@ struct ChipButton: View {
     var on: Bool = false
     let action: () -> Void
     var body: some View {
-        Button(action: action) { Text((on ? "✓ " : "") + label) }
+        Button(action: action) {
+            if on { Label(label, systemImage: "checkmark") } else { Text(label) }
+        }
     }
 }

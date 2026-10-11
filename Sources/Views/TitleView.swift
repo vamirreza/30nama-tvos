@@ -100,8 +100,8 @@ struct TitleView: View {
 
     private func info(_ t: Title) -> some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text(t.name).font(.system(size: 56, weight: .bold))
-            if t.local != nil { Text(t.english).font(.title3).foregroundStyle(.secondary) }
+            Text(t.name).font(.vazir(56, .bold))
+            if t.local != nil { Text(t.english).font(.appTitle3).foregroundStyle(.secondary) }
             MetaLine(parts: [
                 t.year.map { y in "\(y)" + (t.yearEnd.map { "–\($0)" } ?? "") } ?? "",
                 t.minutes.map { "\($0) دقیقه" } ?? "",
@@ -110,15 +110,19 @@ struct TitleView: View {
                 t.nama30.map { "سی‌نما \($0)" } ?? "",
                 t.persianSubtitle ? "زیرنویس فارسی" : "",
             ])
-            if !t.genres.isEmpty { Text(t.genres.joined(separator: "، ")).font(.callout).foregroundStyle(.secondary) }
-            if let plot = t.plot { Text(plot).font(.body).lineLimit(6) }
+            if !t.genres.isEmpty { Text(t.genres.joined(separator: "، ")).font(.appCallout).foregroundStyle(.secondary) }
+            if let plot = t.plot { Text(plot).font(.appBody).lineLimit(6) }
             if let date = t.nextEpisodeDate {
-                Text("\(t.nextEpisodeCaption ?? ""): \(date)").font(.callout).foregroundStyle(.secondary)
+                Text("\(t.nextEpisodeCaption ?? ""): \(date)").font(.appCallout).foregroundStyle(.secondary)
             }
             HStack(spacing: 24) {
                 playButton(t)
-                Button(lists.contains("watchlist", id) ? "✓ در لیست تماشا" : "+ لیست تماشا") { toggle("watchlist") }
-                Button(lists.contains("favorite", id) ? "♥ علاقه‌مندی" : "♡ علاقه‌مندی") { toggle("favorite") }
+                Button { toggle("watchlist") } label: {
+                    Label(lists.contains("watchlist", id) ? "در لیست تماشا" : "لیست تماشا", systemImage: lists.contains("watchlist", id) ? "checkmark" : "plus")
+                }
+                Button { toggle("favorite") } label: {
+                    Label("علاقه‌مندی", systemImage: lists.contains("favorite", id) ? "heart.fill" : "heart")
+                }
             }
             .padding(.top, 10)
         }
@@ -129,10 +133,10 @@ struct TitleView: View {
     private func playButton(_ t: Title) -> some View {
         if t.canStream {
             if let r = stream?.resume, r.time > 0 {
-                Button("▶ ادامه \(r.episodeName ?? "")") { router.play(id, fileId: r.fileId) }
+                Button { router.play(id, fileId: r.fileId) } label: { Label("ادامه \(r.episodeName ?? "")", systemImage: "play.fill") }
                     .focused($playFocused)
             } else {
-                Button("▶ پخش") { router.play(id) }
+                Button { router.play(id) } label: { Label("پخش", systemImage: "play.fill") }
                     .focused($playFocused)
             }
         } else {
@@ -180,8 +184,8 @@ struct TitleView: View {
                     ForEach(seasons[currentSeason] ?? []) { e in
                         Button { router.play(id, fileId: e.fileId) } label: {
                             VStack(spacing: 8) {
-                                Text(e.episodeLabel).font(.title2.bold())
-                                Text(e.episodeName ?? "").font(.caption).lineLimit(2)
+                                Text(e.episodeLabel).font(.appTitle2)
+                                Text(e.episodeName ?? "").font(.appCaption).lineLimit(2)
                             }
                             .frame(width: 240, height: 120)
                         }

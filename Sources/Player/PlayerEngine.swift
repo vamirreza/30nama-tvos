@@ -334,7 +334,7 @@ final class PlayerEngine {
         subtitleLabel.numberOfLines = 0
         subtitleLabel.textAlignment = .center
         subtitleLabel.textColor = .white
-        subtitleLabel.font = .systemFont(ofSize: settings.subSize.pointSize, weight: .semibold)
+        subtitleLabel.font = Vazir.uiFont(settings.subSize.pointSize, .semibold)
         subtitleLabel.layer.shadowColor = UIColor.black.cgColor
         subtitleLabel.layer.shadowOpacity = 1
         subtitleLabel.layer.shadowRadius = 5
@@ -345,13 +345,13 @@ final class PlayerEngine {
         statusLabel.numberOfLines = 0
         statusLabel.textAlignment = .center
         statusLabel.textColor = .white
-        statusLabel.font = .systemFont(ofSize: 36, weight: .medium)
+        statusLabel.font = Vazir.uiFont(36, .medium)
         statusLabel.isHidden = true
         overlay.addSubview(statusLabel)
 
         NSLayoutConstraint.activate([
             subtitleLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            subtitleLabel.bottomAnchor.constraint(equalTo: overlay.bottomAnchor, constant: -90),
+            subtitleLabel.bottomAnchor.constraint(equalTo: overlay.bottomAnchor, constant: -140),
             subtitleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 200),
             subtitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -200),
             statusLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),

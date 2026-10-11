@@ -59,20 +59,20 @@ private struct Hero: View {
             LinearGradient(colors: [.clear, .black.opacity(0.9)], startPoint: .top, endPoint: .bottom)
 
             VStack(alignment: .leading, spacing: 18) {
-                Text(title.name).font(.system(size: 64, weight: .bold)).lineLimit(2)
+                Text(title.name).font(.vazir(64, .bold)).lineLimit(2)
                 MetaLine(parts: [
                     title.year.map { "\($0)" } ?? "",
                     title.imdb.map { "IMDb \($0)" } ?? "",
                     title.age ?? "",
                 ])
                 if let plot = title.plot {
-                    Text(plot).font(.body).lineLimit(3).frame(maxWidth: 1000, alignment: .leading)
+                    Text(plot).font(.appBody).lineLimit(3).frame(maxWidth: 1000, alignment: .leading)
                 }
                 HStack(spacing: 24) {
                     if title.isSeries {
-                        NavigationLink(value: Route.title(title.id)) { Text("▶ پخش") }
+                        NavigationLink(value: Route.title(title.id)) { Label("پخش", systemImage: "play.fill") }
                     } else {
-                        Button("▶ پخش") { router.play(title.id) }
+                        Button { router.play(title.id) } label: { Label("پخش", systemImage: "play.fill") }
                     }
                     NavigationLink(value: Route.title(title.id)) { Text("جزئیات") }
                 }

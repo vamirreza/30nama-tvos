@@ -93,4 +93,30 @@ final class TourTests: XCTestCase {
         press(.menu)
         shot("26-after-menu", wait: 3)
     }
+
+    /// Plays a resumable title, samples frames for subtitles, then walks the transport-bar menus.
+    func testPlayerFeatures() {
+        let app = XCUIApplication()
+        app.launch()
+        shot("30-home", wait: 6)
+        press(.down, 2)
+        press(.select)
+        shot("31-player", wait: 12)
+        // Subtitles only show during dialogue, so sample a few moments.
+        for i in 0..<4 { shot("32-sub-\(i)", wait: 12) }
+        // Skip ahead with the remote to reach other scenes.
+        press(.right, 3, pause: 1.0)
+        shot("33-after-seek", wait: 6)
+        press(.down)
+        shot("34-controls", wait: 1)
+        for i in 0..<4 {
+            press(.right)
+            shot("35-focus-\(i)", wait: 1)
+        }
+        press(.select)
+        shot("36-menu-open", wait: 1.5)
+        press(.menu)
+        press(.menu)
+        shot("37-closed", wait: 3)
+    }
 }

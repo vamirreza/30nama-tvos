@@ -31,8 +31,8 @@ struct ListView: View {
             VStack(alignment: .leading, spacing: 30) {
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: 6) {
-                        if let kicker { Text(kicker).font(.callout).foregroundStyle(.secondary) }
-                        Text(route.title).font(.largeTitle.bold())
+                        if let kicker { Text(kicker).font(.appCallout).foregroundStyle(.secondary) }
+                        Text(route.title).font(.appLargeTitle)
                     }
                     Spacer()
                     HStack(spacing: 20) {
@@ -90,7 +90,7 @@ struct BrowseView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 40) {
                 HStack {
-                    Text("دسته‌بندی‌ها").font(.largeTitle.bold())
+                    Text("دسته‌بندی‌ها").font(.appLargeTitle)
                     Spacer()
                     NavigationLink(value: Route.filters) { Text("جستجوی پیشرفته") }
                 }
@@ -121,7 +121,7 @@ struct BrowseView: View {
 
     private func tiles(_ title: String, _ items: [MenuItem]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text(title).font(.title3.bold())
+            Text(title).font(.appTitle3Bold)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 300, maximum: 340), spacing: 40)], spacing: 40) {
                 ForEach(items) { m in
                     NavigationLink(value: Route.list(ListRoute(title: m.name, source: .archive(slug: m.slug)))) {
@@ -134,7 +134,7 @@ struct BrowseView: View {
                             .frame(width: 300, height: 170)
                             .clipped()
                             LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .top, endPoint: .bottom)
-                            Text(m.name).font(.title3.bold()).padding(16)
+                            Text(m.name).font(.appTitle3Bold).padding(16)
                         }
                         .frame(width: 300, height: 170)
                     }
@@ -189,7 +189,7 @@ struct FiltersView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 40) {
                 HStack {
-                    Text("جستجوی پیشرفته").font(.largeTitle.bold())
+                    Text("جستجوی پیشرفته").font(.appLargeTitle)
                     Spacer()
                     HStack(spacing: 20) {
                         NavigationLink(value: resultsRoute) { Text("نمایش نتایج") }
@@ -234,7 +234,7 @@ struct FiltersView: View {
 
     private func group(_ title: String, _ options: [Option], selected: @escaping (String) -> Bool, pick: @escaping (String) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(title).font(.title3.bold())
+            Text(title).font(.appTitle3Bold)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 20)], alignment: .leading, spacing: 20) {
                 ForEach(options) { o in
                     ChipButton(label: o.name, on: selected(o.value)) { pick(o.value) }

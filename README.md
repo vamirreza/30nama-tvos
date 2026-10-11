@@ -82,9 +82,9 @@ This port was written without access to a Mac, so treat the first build as unver
   If the stream's groups are not named like that, the system's default pick is used.
 - **Cloudflare** sits in front of the API. The Chromium TV runtimes pass it; `URLSession` may not.
   If the login screen shows «سرور سی‌نما درخواست را مسدود کرد», that is why.
-- **No app icon or top-shelf image yet.** tvOS wants a layered icon; add an App Icon & Top Shelf
-  asset catalog before shipping beyond your own TV.
-- The Persian font is the system one, not Vazirmatn.
+- The app icon and top-shelf image are generated placeholders (a red play disc and the wordmark);
+  replace the layers in `Resources/Assets.xcassets` with real artwork before shipping beyond your own TV.
+- The UI font is Vazirmatn (SIL OFL, `Resources/Fonts/OFL.txt`), bundled in `Resources/Fonts`.
 
 ## How it works
 

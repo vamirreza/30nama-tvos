@@ -16,6 +16,7 @@ struct SiNamaTVApp: App {
                 .environment(\.layoutDirection, .rightToLeft)
                 .environment(\.locale, Locale(identifier: "fa"))
                 .preferredColorScheme(.dark)
+                .font(.appBody)
         }
     }
 }

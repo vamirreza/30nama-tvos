@@ -178,17 +178,29 @@ final class PlayerEngine {
 
     /// Each quality carries stereo and 5.1 audio groups; pick the one the viewer prefers.
     /// AVFoundation does not expose channel counts, so the option name is what is matched.
+    /// A group with a single option can arrive with nothing selected, which plays silence, so
+    /// something is always selected once the item is ready.
     private func preferAudio(for item: AVPlayerItem) {
         let wantSurround = settings.audio == .surround
         Task { [weak self] in
-            guard let group = try? await item.asset.loadMediaSelectionGroup(for: .audible), group.options.count > 1 else { return }
+            guard let group = try? await item.asset.loadMediaSelectionGroup(for: .audible), !group.options.isEmpty else { return }
+            // Selections are only honoured once the item is ready; automatic criteria run then too.
+            var waited = 0
+            while item.status != .readyToPlay, waited < 80 {
+                if item.status == .failed { return }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                waited += 1
+            }
             guard self != nil else { return }
-            let match = group.options.first { option in
+            let current = item.currentMediaSelection.selectedMediaOption(in: group)
+            let preferred = group.options.first { option in
                 let name = option.displayName.lowercased()
                 let surround = name.contains("5.1") || name.contains("6ch") || name.contains("6 ch") || name.contains("surround")
                 return surround == wantSurround
             }
-            if let match { item.select(match, in: group) }
+            let choice = preferred ?? current ?? group.options.first
+            if let choice, choice != current { item.select(choice, in: group) }
+            NSLog("[audio] options=\(group.options.map(\.displayName)) was=\(current?.displayName ?? "none") now=\(choice?.displayName ?? "none")")
         }
     }
 

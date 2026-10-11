@@ -48,13 +48,18 @@ private struct Hero: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            AsyncImage(url: title.cover) { image in
-                image.resizable().scaledToFill()
-            } placeholder: {
-                Color.white.opacity(0.05)
-            }
-            .frame(maxWidth: .infinity, maxHeight: Metrics.heroHeight)
-            .clipped()
+            // The image fills an overlay, so its fill-scaled width cannot widen the page.
+            Color.clear
+                .frame(maxWidth: .infinity)
+                .frame(height: Metrics.heroHeight)
+                .overlay {
+                    AsyncImage(url: title.cover) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Color.white.opacity(0.05)
+                    }
+                }
+                .clipped()
 
             LinearGradient(colors: [.clear, .black.opacity(0.9)], startPoint: .top, endPoint: .bottom)
 

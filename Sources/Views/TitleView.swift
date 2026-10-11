@@ -113,6 +113,42 @@ struct TitleView: View {
         }
     }
 
+    private func watchlistButton() -> some View {
+        Button { toggle("watchlist") } label: {
+            Label(lists.contains("watchlist", id) ? "در لیست تماشا" : "لیست تماشا", systemImage: lists.contains("watchlist", id) ? "checkmark" : "plus")
+                .lineLimit(1)
+        }
+    }
+
+    private func favoriteButton() -> some View {
+        Button { toggle("favorite") } label: {
+            Label("علاقه‌مندی", systemImage: lists.contains("favorite", id) ? "heart.fill" : "heart")
+                .lineLimit(1)
+        }
+    }
+
+    @ViewBuilder
+    private func actions(_ t: Title) -> some View {
+        #if os(tvOS)
+        HStack(spacing: 24) {
+            playButton(t)
+            watchlistButton()
+            favoriteButton()
+        }
+        #else
+        VStack(spacing: 10) {
+            playButton(t)
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
+            HStack(spacing: 10) {
+                watchlistButton().frame(maxWidth: .infinity)
+                favoriteButton().frame(maxWidth: .infinity)
+            }
+        }
+        .controlSize(.large)
+        #endif
+    }
+
     private func info(_ t: Title) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             Text(t.name).font(.appTitleLarge)
@@ -130,15 +166,7 @@ struct TitleView: View {
             if let date = t.nextEpisodeDate {
                 Text("\(t.nextEpisodeCaption ?? ""): \(date)").font(.appCallout).foregroundStyle(.secondary)
             }
-            HStack(spacing: 24) {
-                playButton(t)
-                Button { toggle("watchlist") } label: {
-                    Label(lists.contains("watchlist", id) ? "در لیست تماشا" : "لیست تماشا", systemImage: lists.contains("watchlist", id) ? "checkmark" : "plus")
-                }
-                Button { toggle("favorite") } label: {
-                    Label("علاقه‌مندی", systemImage: lists.contains("favorite", id) ? "heart.fill" : "heart")
-                }
-            }
+            actions(t)
             .padding(.top, 10)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

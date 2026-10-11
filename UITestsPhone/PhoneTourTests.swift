@@ -18,14 +18,19 @@ final class PhoneTourTests: XCTestCase {
         try? png.write(to: shots.appendingPathComponent("\(name).png"))
     }
 
+    private func launchApp() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launch()
+        return app
+    }
+
     private func tab(_ app: XCUIApplication, _ label: String) {
         let b = app.tabBars.buttons[label]
         if b.waitForExistence(timeout: 5) { b.tap() }
     }
 
     func testLoginSheet() throws {
-        let app = XCUIApplication()
-        app.launch()
+        let app = launchApp()
         let login = app.buttons["ورود با سی‌نما"]
         guard login.waitForExistence(timeout: 20) else { throw XCTSkip("Already signed in") }
         shot("p01-login")
@@ -34,9 +39,8 @@ final class PhoneTourTests: XCTestCase {
     }
 
     func testSignedInTour() throws {
-        let app = XCUIApplication()
-        app.launch()
-        guard app.tabBars.buttons["خانه"].waitForExistence(timeout: 25) else { throw XCTSkip("Signed out") }
+        let app = launchApp()
+        guard app.tabBars.buttons["خانه"].waitForExistence(timeout: 40) else { throw XCTSkip("Signed out") }
         shot("p10-home", wait: 6)
         app.swipeUp(); shot("p11-home-scrolled")
         app.swipeDown()
@@ -57,9 +61,8 @@ final class PhoneTourTests: XCTestCase {
 
     /// Plays a title through search so no tab-specific layout is needed to find it.
     func testPlayback() throws {
-        let app = XCUIApplication()
-        app.launch()
-        guard app.tabBars.buttons["جستجو"].waitForExistence(timeout: 25) else { throw XCTSkip("Signed out") }
+        let app = launchApp()
+        guard app.tabBars.buttons["جستجو"].waitForExistence(timeout: 40) else { throw XCTSkip("Signed out") }
         tab(app, "جستجو")
         let field = app.searchFields.firstMatch
         guard field.waitForExistence(timeout: 5) else { return }

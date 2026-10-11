@@ -103,7 +103,7 @@ final class PlayerEngine {
             resume = s.resume
             titleName = s.name
             guard !items.isEmpty else {
-                showStatus("فایلی برای پخش پیدا نشد")
+                failAndClose("فایلی برای پخش پیدا نشد")
                 return
             }
             // No explicit file means "resume": the stream's saved episode, else the first file.
@@ -111,7 +111,7 @@ final class PlayerEngine {
             let i = target.flatMap { t in items.firstIndex { $0.fileId == t } } ?? 0
             play(index: i)
         } catch {
-            if let m = describe(error) { showStatus("خطای پخش: \(m)") }
+            if let m = describe(error) { failAndClose("خطای پخش: \(m)") }
         }
     }
 
@@ -416,6 +416,16 @@ final class PlayerEngine {
             self.chrome = chrome
         }
         #endif
+    }
+
+    /// Nothing will play: say why, then go back instead of leaving a spinner over the message.
+    private func failAndClose(_ text: String) {
+        showStatus(text)
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            guard let self, !self.closed else { return }
+            self.onClose()
+        }
     }
 
     private func showStatus(_ text: String) {

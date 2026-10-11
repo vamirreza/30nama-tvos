@@ -55,7 +55,7 @@ final class AppState: ObservableObject {
         do {
             user = try await API.user()
             phase = .ready
-        } catch let e as APIError where e.kind == .unauthorized {
+        } catch let e as APIError where e.kind == .unauthorized || e.message.contains("ابتدا وارد") {
             // An expired or revoked session sends the viewer back to the QR screen.
             SessionStore.token = nil
             user = nil

@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.vamirreza
   deploymentTarget:
     tvOS: "17.0"
+    iOS: "17.0"
   createIntermediateGroups: true
 configFiles:
   Debug: Config/Base.xcconfig
@@ -13,7 +14,8 @@ targets:
     platform: tvOS
     sources:
       - path: Sources
-      - path: Resources
+      - path: Resources/Fonts
+      - path: Resources/tvOS
     info:
       path: Config/Info.plist
       properties:
@@ -40,6 +42,42 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: "App Icon & Top Shelf Image"
+  SiNamaPhone:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources/Fonts
+      - path: Resources/iOS
+    info:
+      path: Config/Info-iOS.plist
+      properties:
+        CFBundleDisplayName: "سی‌نما"
+        UILaunchScreen: {}
+        UIUserInterfaceStyle: Dark
+        # Filled in from Config/Secrets.xcconfig (git-ignored).
+        APIKey: "$(API_KEY)"
+        UIBackgroundModes:
+          - audio
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIAppFonts:
+          - Vazirmatn-Regular.ttf
+          - Vazirmatn-Medium.ttf
+          - Vazirmatn-SemiBold.ttf
+          - Vazirmatn-Bold.ttf
+          - Vazirmatn-ExtraBold.ttf
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vamirreza.sinama.phone
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
   SiNamaTVUITests:
     type: bundle.ui-testing
     platform: tvOS
@@ -60,6 +98,14 @@ schemes:
     test:
       targets:
         - SiNamaTVUITests
+    run:
+      config: Debug
+    archive:
+      config: Release
+  SiNamaPhone:
+    build:
+      targets:
+        SiNamaPhone: all
     run:
       config: Debug
     archive:

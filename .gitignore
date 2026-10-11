@@ -6,3 +6,4 @@ build/
 Config/Secrets.xcconfig
 Config/Info.plist
 *.ipa
+Config/Info-iOS.plist

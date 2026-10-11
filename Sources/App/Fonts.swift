@@ -36,20 +36,31 @@ extension Font.Weight {
 }
 
 extension Font {
-    /// tvOS text-style sizes, set in Vazirmatn.
+    /// A Vazirmatn font at a fixed point size (tvOS has no Dynamic Type to scale it).
     static func vazir(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
         .custom(Vazir.name(weight), fixedSize: size)
     }
 
-    static let appLargeTitle = vazir(76, .bold)
-    static let appTitle = vazir(64, .bold)
-    static let appTitle2 = vazir(52, .bold)
-    static let appTitle3 = vazir(42)
-    static let appTitle3Bold = vazir(42, .bold)
-    static let appHeadline = vazir(36, .semibold)
-    static let appCallout = vazir(30)
-    static let appCalloutMedium = vazir(30, .medium)
-    static let appBody = vazir(29)
-    static let appCaption = vazir(24)
-    static let appCaption2Bold = vazir(22, .bold)
+    private static func sized(tv: CGFloat, phone: CGFloat) -> CGFloat {
+        #if os(tvOS)
+        tv
+        #else
+        phone
+        #endif
+    }
+
+    static let appLargeTitle = vazir(sized(tv: 76, phone: 30), .bold)
+    static let appTitle = vazir(sized(tv: 64, phone: 26), .bold)
+    static let appTitle2 = vazir(sized(tv: 52, phone: 21), .bold)
+    static let appTitle3 = vazir(sized(tv: 42, phone: 17))
+    static let appTitle3Bold = vazir(sized(tv: 42, phone: 17), .bold)
+    static let appHeadline = vazir(sized(tv: 36, phone: 15), .semibold)
+    static let appCallout = vazir(sized(tv: 30, phone: 14))
+    static let appCalloutMedium = vazir(sized(tv: 30, phone: 14), .medium)
+    static let appBody = vazir(sized(tv: 29, phone: 15))
+    static let appCaption = vazir(sized(tv: 24, phone: 12))
+    static let appCaption2Bold = vazir(sized(tv: 22, phone: 11), .bold)
+    static let appTitleLarge = vazir(sized(tv: 56, phone: 24), .bold)
+    /// The wordmark on the sign-in screen.
+    static let appBrand = vazir(sized(tv: 80, phone: 44), .heavy)
 }

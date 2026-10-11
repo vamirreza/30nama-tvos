@@ -17,6 +17,10 @@ struct SiNamaTVApp: App {
                 .environment(\.locale, Locale(identifier: "fa"))
                 .preferredColorScheme(.dark)
                 .font(.appBody)
+                #if os(iOS)
+                .tint(.red)
+                .buttonStyle(.bordered)
+                #endif
         }
     }
 }
@@ -51,7 +55,9 @@ struct MainTabs: View {
             Nav { SearchView() }.tabItem { Label("جستجو", systemImage: "magnifyingglass") }
             Nav { BrowseView() }.tabItem { Label("دسته‌بندی", systemImage: "square.grid.2x2") }
             Nav { MyListView() }.tabItem { Label("لیست من", systemImage: "bookmark") }
+            #if os(tvOS)
             Nav { NotificationsView() }.tabItem { Label("اعلان‌ها", systemImage: "bell") }
+            #endif
             Nav { ProfileView() }.tabItem { Label("حساب", systemImage: "person.crop.circle") }
         }
     }

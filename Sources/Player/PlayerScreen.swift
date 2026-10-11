@@ -18,6 +18,11 @@ final class PlayerHostController: UIViewController {
     }
 
     override var preferredFocusEnvironments: [UIFocusEnvironment] { [playerVC] }
+
+    #if os(iOS)
+    override var prefersStatusBarHidden: Bool { true }
+    override var prefersHomeIndicatorAutoHidden: Bool { true }
+    #endif
 }
 
 struct PlayerScreen: UIViewControllerRepresentable {

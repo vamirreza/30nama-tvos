@@ -50,13 +50,13 @@ struct MyListView: View {
                     ForEach(Tab.allCases) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
-                .focusSection()
+                .tvFocusSection()
 
                 PagedGrid(empty: tab.empty, onSelect: selectHandler, fetch: fetch(tab))
                 .id("\(tab.rawValue)-\(reload)")
             }
-            .padding(.horizontal, 80)
-            .padding(.vertical, 40)
+            .padding(.horizontal, Metrics.pagePad)
+            .padding(.vertical, Metrics.pageVPad)
         }
         .navigationDestination(item: $detail) { TitleView(id: $0) }
         .confirmationDialog(
@@ -106,11 +106,15 @@ struct NotificationsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
                     }
+                    #if os(iOS)
+                    .buttonStyle(.plain)
+                    .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                    #endif
                     .opacity(n.read ? 0.7 : 1)
                 }
             }
-            .padding(.horizontal, 80)
-            .padding(.vertical, 40)
+            .padding(.horizontal, Metrics.pagePad)
+            .padding(.vertical, Metrics.pageVPad)
         }
         .navigationDestination(item: $detail) { TitleView(id: $0) }
         .task { await load() }
@@ -148,7 +152,7 @@ struct ProfileView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 36) {
+            VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 Text("حساب و تنظیمات").font(.appLargeTitle)
                 if let u = app.user { account(u) }
 
@@ -157,12 +161,18 @@ struct ProfileView: View {
                 setting("صدا", selection: $settings.audio, options: AudioPref.allCases) { $0.label }
                 setting("کیفیت تصویر", selection: $settings.quality, options: Quality.allCases) { $0.label }
 
+                #if os(iOS)
+                NavigationLink(value: Route.notifications) {
+                    Label("اعلان‌ها", systemImage: "bell").frame(maxWidth: .infinity)
+                }
+                #endif
+
                 Button("خروج از حساب") { confirmLogout = true }
             }
-            .padding(.horizontal, 80)
-            .padding(.vertical, 40)
+            .padding(.horizontal, Metrics.pagePad)
+            .padding(.vertical, Metrics.pageVPad)
         }
-        .confirmationDialog("از حساب سی‌نما در این تلویزیون خارج شوید؟", isPresented: $confirmLogout, titleVisibility: .visible) {
+        .confirmationDialog("از حساب سی‌نما در این دستگاه خارج شوید؟", isPresented: $confirmLogout, titleVisibility: .visible) {
             Button("خروج", role: .destructive) { Task { await app.logout() } }
             Button("انصراف", role: .cancel) {}
         }
@@ -175,7 +185,7 @@ struct ProfileView: View {
             } placeholder: {
                 Color.white.opacity(0.1)
             }
-            .frame(width: 120, height: 120)
+            .frame(width: Metrics.avatar, height: Metrics.avatar)
             .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 8) {
@@ -198,6 +208,6 @@ struct ProfileView: View {
             }
             .pickerStyle(.segmented)
         }
-        .focusSection()
+        .tvFocusSection()
     }
 }

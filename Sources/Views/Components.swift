@@ -19,6 +19,7 @@ enum Route: Hashable {
     case title(Int)
     case list(ListRoute)
     case filters
+    case notifications
 }
 
 @ViewBuilder
@@ -27,6 +28,7 @@ func destination(for route: Route) -> some View {
     case .title(let id): TitleView(id: id)
     case .list(let r): ListView(route: r)
     case .filters: FiltersView()
+    case .notifications: NotificationsView()
     }
 }
 
@@ -46,7 +48,7 @@ struct Nav<Content: View>: View {
 
 struct PosterCell: View {
     let title: Title
-    var width: CGFloat = 230
+    var width: CGFloat = Metrics.posterWidth
     /// nil opens the title page.
     var onSelect: (() -> Void)?
 
@@ -79,9 +81,9 @@ struct PosterCell: View {
     var body: some View {
         VStack(spacing: 14) {
             if let onSelect {
-                Button(action: onSelect) { poster }.buttonStyle(.borderless)
+                Button(action: onSelect) { poster }.posterButtonStyle()
             } else {
-                NavigationLink(value: Route.title(title.id)) { poster }.buttonStyle(.borderless)
+                NavigationLink(value: Route.title(title.id)) { poster }.posterButtonStyle()
             }
             VStack(spacing: 4) {
                 Text(title.name).font(.appCalloutMedium).lineLimit(1)
@@ -106,17 +108,17 @@ struct TitleRow: View {
     var body: some View {
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                Text(title).font(.appTitle3Bold).padding(.horizontal, 80)
+                Text(title).font(.appTitle3Bold).padding(.horizontal, Metrics.pagePad)
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 40) {
+                    LazyHStack(spacing: Metrics.rowGap) {
                         ForEach(Array(items.enumerated()), id: \.offset) { _, t in
                             PosterCell(title: t, onSelect: action(for: t))
                         }
                     }
-                    .padding(.horizontal, 80)
-                    .padding(.vertical, 30)
+                    .padding(.horizontal, Metrics.pagePad)
+                    .padding(.vertical, Metrics.rowVPad)
                 }
-                .scrollClipDisabled()
+                .rowClipDisabled()
             }
         }
     }
@@ -158,7 +160,7 @@ struct PagedGrid: View {
     @StateObject private var loader: PagedLoader
     private let empty: String
     private let onSelect: ((Title) -> Void)?
-    private let columns = [GridItem(.adaptive(minimum: 230, maximum: 240), spacing: 40)]
+    private let columns = [GridItem(.adaptive(minimum: Metrics.gridMin, maximum: Metrics.gridMax), spacing: Metrics.gridGap)]
 
     init(empty: String = "چیزی پیدا نشد", onSelect: ((Title) -> Void)? = nil, fetch: @escaping (Int) async throws -> Page) {
         _loader = StateObject(wrappedValue: PagedLoader(fetch: fetch))
@@ -176,7 +178,7 @@ struct PagedGrid: View {
 
     var body: some View {
         VStack(spacing: 30) {
-            LazyVGrid(columns: columns, spacing: 50) {
+            LazyVGrid(columns: columns, spacing: Metrics.gridRowGap) {
                 ForEach(Array(loader.items.enumerated()), id: \.offset) { i, t in cell(i, t) }
             }
             if loader.isLoading { ProgressView().padding(40) }
@@ -208,7 +210,7 @@ struct ErrorNote: View {
             Text(message).foregroundStyle(.red).multilineTextAlignment(.center)
             if let retry { Button("تلاش دوباره", action: retry) }
         }
-        .padding(60)
+        .padding(Metrics.pagePad)
     }
 }
 

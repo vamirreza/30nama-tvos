@@ -28,7 +28,7 @@ struct ListView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 30) {
+            VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack(alignment: .bottom) {
                     VStack(alignment: .leading, spacing: 6) {
                         if let kicker { Text(kicker).font(.appCallout).foregroundStyle(.secondary) }
@@ -40,11 +40,11 @@ struct ListView: View {
                         ChipButton(label: "جدیدترین", on: order == .year) { order = .year }
                     }
                 }
-                .focusSection()
+                .tvFocusSection()
                 PagedGrid(fetch: fetcher(order)).id(order.rawValue)
             }
-            .padding(.horizontal, 80)
-            .padding(.vertical, 40)
+            .padding(.horizontal, Metrics.pagePad)
+            .padding(.vertical, Metrics.pageVPad)
         }
     }
 }
@@ -65,10 +65,10 @@ struct SearchView: View {
                     PagedGrid(empty: "نتیجه‌ای برای «\(query)» پیدا نشد") { page in try await API.search(query, page: page) }
                         .id(query)
                 } else {
-                    Text("دست‌کم سه حرف بنویسید.").foregroundStyle(.secondary).padding(80)
+                    Text("دست‌کم سه حرف بنویسید.").foregroundStyle(.secondary).padding(Metrics.pagePad)
                 }
             }
-            .padding(.horizontal, 80)
+            .padding(.horizontal, Metrics.pagePad)
         }
         .searchable(text: $text, prompt: "نام فیلم، سریال یا انیمه")
         .task(id: text) {
@@ -88,24 +88,24 @@ struct BrowseView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 40) {
+            VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack {
                     Text("دسته‌بندی‌ها").font(.appLargeTitle)
                     Spacer()
                     NavigationLink(value: Route.filters) { Text("جستجوی پیشرفته") }
                 }
-                .focusSection()
+                .tvFocusSection()
                 if let m = menu {
                     tiles("نوع", m.categories.filter { !hidden.contains($0.slug) })
                     tiles("ژانر", m.genres)
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {
-                    ProgressView().frame(maxWidth: .infinity).padding(80)
+                    ProgressView().frame(maxWidth: .infinity).padding(Metrics.pagePad)
                 }
             }
-            .padding(.horizontal, 80)
-            .padding(.vertical, 40)
+            .padding(.horizontal, Metrics.pagePad)
+            .padding(.vertical, Metrics.pageVPad)
         }
         .task { if menu == nil { await load() } }
     }
@@ -122,7 +122,7 @@ struct BrowseView: View {
     private func tiles(_ title: String, _ items: [MenuItem]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             Text(title).font(.appTitle3Bold)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 300, maximum: 340), spacing: 40)], spacing: 40) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.tileMin, maximum: Metrics.tileMax), spacing: Metrics.gridGap)], spacing: Metrics.gridGap) {
                 ForEach(items) { m in
                     NavigationLink(value: Route.list(ListRoute(title: m.name, source: .archive(slug: m.slug)))) {
                         ZStack(alignment: .bottomLeading) {
@@ -131,18 +131,18 @@ struct BrowseView: View {
                             } placeholder: {
                                 Color.white.opacity(0.1)
                             }
-                            .frame(width: 300, height: 170)
+                            .frame(width: Metrics.tileWidth, height: Metrics.tileHeight)
                             .clipped()
                             LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .top, endPoint: .bottom)
                             Text(m.name).font(.appTitle3Bold).padding(16)
                         }
-                        .frame(width: 300, height: 170)
+                        .frame(width: Metrics.tileWidth, height: Metrics.tileHeight)
                     }
-                    .buttonStyle(.card)
+                    .tileButtonStyle()
                 }
             }
         }
-        .focusSection()
+        .tvFocusSection()
     }
 }
 
@@ -187,7 +187,7 @@ struct FiltersView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 40) {
+            VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack {
                     Text("جستجوی پیشرفته").font(.appLargeTitle)
                     Spacer()
@@ -198,7 +198,7 @@ struct FiltersView: View {
                         }
                     }
                 }
-                .focusSection()
+                .tvFocusSection()
                 if let p = params {
                     group("نوع", p.type, selected: { types.contains($0) }) { toggle(&types, $0) }
                     group("ژانر", p.genre, selected: { genres.contains($0) }) { toggle(&genres, $0) }
@@ -210,11 +210,11 @@ struct FiltersView: View {
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {
-                    ProgressView().frame(maxWidth: .infinity).padding(80)
+                    ProgressView().frame(maxWidth: .infinity).padding(Metrics.pagePad)
                 }
             }
-            .padding(.horizontal, 80)
-            .padding(.vertical, 40)
+            .padding(.horizontal, Metrics.pagePad)
+            .padding(.vertical, Metrics.pageVPad)
         }
         .task { if params == nil { await load() } }
     }
@@ -235,12 +235,12 @@ struct FiltersView: View {
     private func group(_ title: String, _ options: [Option], selected: @escaping (String) -> Bool, pick: @escaping (String) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(title).font(.appTitle3Bold)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 20)], alignment: .leading, spacing: 20) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.chipMin), spacing: 20)], alignment: .leading, spacing: 20) {
                 ForEach(options) { o in
                     ChipButton(label: o.name, on: selected(o.value)) { pick(o.value) }
                 }
             }
         }
-        .focusSection()
+        .tvFocusSection()
     }
 }

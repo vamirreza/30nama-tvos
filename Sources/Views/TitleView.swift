@@ -66,24 +66,39 @@ struct TitleView: View {
 
     // MARK: layout
 
+    private func poster(_ t: Title) -> some View {
+        AsyncImage(url: t.posterLarge) { image in
+            image.resizable().scaledToFill()
+        } placeholder: {
+            Color.white.opacity(0.08)
+        }
+        .frame(width: Metrics.titlePosterWidth, height: Metrics.titlePosterHeight)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    @ViewBuilder
+    private func header(_ t: Title) -> some View {
+        #if os(tvOS)
+        HStack(alignment: .top, spacing: 60) {
+            poster(t)
+            info(t)
+        }
+        #else
+        VStack(alignment: .leading, spacing: 18) {
+            poster(t).frame(maxWidth: .infinity)
+            info(t)
+        }
+        #endif
+    }
+
     private func content(_ t: Title) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 50) {
-                HStack(alignment: .top, spacing: 60) {
-                    AsyncImage(url: t.posterLarge) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        Color.white.opacity(0.08)
-                    }
-                    .frame(width: 360, height: 540)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-
-                    info(t)
-                }
+            VStack(alignment: .leading, spacing: Metrics.sectionGap) {
+                header(t)
                 if !t.directors.isEmpty || !t.cast.isEmpty { people(t) }
                 if !seasonKeys.isEmpty { episodes }
             }
-            .padding(80)
+            .padding(Metrics.pagePad)
         }
         .background {
             ZStack {
@@ -100,7 +115,7 @@ struct TitleView: View {
 
     private func info(_ t: Title) -> some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text(t.name).font(.vazir(56, .bold))
+            Text(t.name).font(.appTitleLarge)
             if t.local != nil { Text(t.english).font(.appTitle3).foregroundStyle(.secondary) }
             MetaLine(parts: [
                 t.year.map { y in "\(y)" + (t.yearEnd.map { "–\($0)" } ?? "") } ?? "",
@@ -156,8 +171,8 @@ struct TitleView: View {
             }
             .padding(.vertical, 20)
         }
-        .scrollClipDisabled()
-        .focusSection()
+        .rowClipDisabled()
+        .tvFocusSection()
     }
 
     private func personLink(_ p: Person, role: String, label: String) -> some View {
@@ -176,8 +191,8 @@ struct TitleView: View {
                 }
                 .padding(.vertical, 20)
             }
-            .scrollClipDisabled()
-            .focusSection()
+            .rowClipDisabled()
+            .tvFocusSection()
 
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 20) {
@@ -187,14 +202,14 @@ struct TitleView: View {
                                 Text(e.episodeLabel).font(.appTitle2)
                                 Text(e.episodeName ?? "").font(.appCaption).lineLimit(2)
                             }
-                            .frame(width: 240, height: 120)
+                            .frame(width: Metrics.episodeWidth, height: Metrics.episodeHeight)
                         }
                     }
                 }
                 .padding(.vertical, 20)
             }
-            .scrollClipDisabled()
-            .focusSection()
+            .rowClipDisabled()
+            .tvFocusSection()
         }
     }
 }

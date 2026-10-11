@@ -21,11 +21,19 @@ enum SubSize: String, CaseIterable {
         }
     }
     var pointSize: CGFloat {
+        #if os(tvOS)
         switch self {
         case .s: return 38
         case .m: return 48
         case .l: return 60
         }
+        #else
+        switch self {
+        case .s: return 15
+        case .m: return 19
+        case .l: return 24
+        }
+        #endif
     }
 }
 
@@ -41,7 +49,7 @@ enum Quality: Int, CaseIterable {
     var label: String { self == .auto ? "خودکار" : "\(rawValue)p" }
 }
 
-/// Viewer preferences, kept on the Apple TV in UserDefaults.
+/// Viewer preferences, kept on the device in UserDefaults.
 @MainActor
 final class SettingsStore: ObservableObject {
     private let d = UserDefaults.standard

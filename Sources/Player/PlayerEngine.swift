@@ -33,6 +33,9 @@ final class PlayerEngine {
     private var nextDeadline: Double?
     private var closed = false
 
+    #if os(iOS)
+    private var chrome: PlayerChrome?
+    #endif
     private let subtitleLabel = UILabel()
     private let statusLabel = UILabel()
 
@@ -56,6 +59,12 @@ final class PlayerEngine {
 
     func start() {
         playerVC.player = player
+        #if os(iOS)
+        // Sound must play with the silent switch on, and Picture in Picture needs this category.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+        try? AVAudioSession.sharedInstance().setActive(true)
+        playerVC.allowsPictureInPicturePlayback = true
+        #endif
         setupOverlay()
         showStatus("در حال بارگذاری…")
 
@@ -83,7 +92,7 @@ final class PlayerEngine {
         if let endObserver { NotificationCenter.default.removeObserver(endObserver) }
         endObserver = nil
         player.replaceCurrentItem(with: nil)
-        playerVC.contextualActions = []
+        setActions([])
     }
 
     private func loadStream() async {
@@ -128,7 +137,7 @@ final class PlayerEngine {
         }
 
         contextual = .none
-        playerVC.contextualActions = []
+        setActions([])
         autoNext = true
         nextDeadline = nil
         lastReport = 0
@@ -218,18 +227,18 @@ final class PlayerEngine {
         let next = UIAction(title: "قسمت بعد", image: UIImage(systemName: "forward.end.fill")) { [weak self] _ in self?.playNext() }
         switch state {
         case .none:
-            playerVC.contextualActions = []
+            setActions([])
         case .intro:
-            playerVC.contextualActions = [
+            setActions([
                 UIAction(title: "رد کردن تیتراژ", image: UIImage(systemName: "forward.fill")) { [weak self] _ in self?.skipIntro() },
-            ]
+            ])
         case .nextAuto:
-            playerVC.contextualActions = [
+            setActions([
                 next,
                 UIAction(title: "ماندن") { [weak self] _ in self?.autoNext = false },
-            ]
+            ])
         case .nextManual:
-            playerVC.contextualActions = [next]
+            setActions([next])
         }
     }
 
@@ -323,8 +332,32 @@ final class PlayerEngine {
         }
         menus.append(UIMenu(title: "کیفیت", image: UIImage(systemName: "slider.horizontal.3"), children: qualities))
 
-        playerVC.transportBarCustomMenuItems = menus
+        setMenus(menus)
     }
+
+    // The transport bar's custom menus and contextual actions are tvOS-only; on iPhone the same
+    // elements feed PlayerChrome instead.
+    private func setActions(_ actions: [UIAction]) {
+        #if os(tvOS)
+        playerVC.contextualActions = actions
+        #else
+        chrome?.setActions(actions)
+        #endif
+    }
+
+    private func setMenus(_ menus: [UIMenuElement]) {
+        #if os(tvOS)
+        playerVC.transportBarCustomMenuItems = menus
+        #else
+        chrome?.setMenus(menus)
+        #endif
+    }
+
+    #if os(tvOS)
+    private let statusFontSize: CGFloat = 36
+    #else
+    private let statusFontSize: CGFloat = 16
+    #endif
 
     private func setupOverlay() {
         playerVC.loadViewIfNeeded()
@@ -345,20 +378,44 @@ final class PlayerEngine {
         statusLabel.numberOfLines = 0
         statusLabel.textAlignment = .center
         statusLabel.textColor = .white
-        statusLabel.font = Vazir.uiFont(36, .medium)
+        statusLabel.font = Vazir.uiFont(statusFontSize, .medium)
         statusLabel.isHidden = true
         overlay.addSubview(statusLabel)
 
+        #if os(tvOS)
+        let sideInset: CGFloat = 200, subtitleLift: CGFloat = 140
+        #else
+        let sideInset: CGFloat = 40, subtitleLift: CGFloat = 56
+        #endif
         NSLayoutConstraint.activate([
             subtitleLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
-            subtitleLabel.bottomAnchor.constraint(equalTo: overlay.bottomAnchor, constant: -140),
-            subtitleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 200),
-            subtitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -200),
+            subtitleLabel.bottomAnchor.constraint(equalTo: overlay.bottomAnchor, constant: -subtitleLift),
+            subtitleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: sideInset),
+            subtitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -sideInset),
             statusLabel.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
             statusLabel.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
-            statusLabel.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 200),
-            statusLabel.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -200),
+            statusLabel.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: sideInset),
+            statusLabel.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -sideInset),
         ])
+
+        #if os(iOS)
+        if let host = playerVC.parent?.view {
+            let chrome = PlayerChrome(onClose: onClose)
+            host.addSubview(chrome)
+            NSLayoutConstraint.activate([
+                chrome.leadingAnchor.constraint(equalTo: host.leadingAnchor),
+                chrome.trailingAnchor.constraint(equalTo: host.trailingAnchor),
+                chrome.topAnchor.constraint(equalTo: host.topAnchor),
+                chrome.bottomAnchor.constraint(equalTo: host.bottomAnchor),
+            ])
+            // A tap anywhere brings the close and menu buttons back for a few seconds.
+            let tap = UITapGestureRecognizer(target: chrome, action: #selector(PlayerChrome.pulse))
+            tap.cancelsTouchesInView = false
+            tap.delegate = chrome
+            host.addGestureRecognizer(tap)
+            self.chrome = chrome
+        }
+        #endif
     }
 
     private func showStatus(_ text: String) {

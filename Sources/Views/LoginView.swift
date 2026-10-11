@@ -1,5 +1,8 @@
 import CoreImage.CIFilterBuiltins
 import SwiftUI
+#if os(iOS)
+import SafariServices
+#endif
 
 private func qrImage(_ string: String) -> UIImage? {
     let filter = CIFilter.qrCodeGenerator()
@@ -18,10 +21,11 @@ struct LoginView: View {
     @State private var state = Phase.loading
     @State private var attempt = 0
 
-    var body: some View {
+    #if os(tvOS)
+    private var tvBody: some View {
         HStack(spacing: 100) {
             VStack(alignment: .leading, spacing: 28) {
-                Text("سی‌نما").font(.vazir(80, .heavy)).foregroundStyle(.red)
+                Text("سی‌نما").font(.appBrand).foregroundStyle(.red)
                 Text("ورود به حساب").font(.appTitle)
                 VStack(alignment: .leading, spacing: 14) {
                     Text("۱. با گوشی یا کامپیوتری که در سی‌نما وارد حساب‌تان شده‌اید، کد QR را اسکن کنید.")
@@ -53,7 +57,58 @@ struct LoginView: View {
             }
             .frame(width: 520, height: 520)
         }
-        .padding(80)
+        .padding(Metrics.pagePad)
+    }
+    #endif
+
+    #if os(iOS)
+    @State private var safari: SafariTarget?
+
+    private var phoneBody: some View {
+        VStack(spacing: Metrics.sectionGap) {
+            Spacer()
+            Text("سی‌نما").font(.appBrand).foregroundStyle(.red)
+            Text("ورود به حساب").font(.appTitle)
+            Text("صفحهٔ سی‌نما را باز کنید، وارد حساب‌تان شوید و ورود این دستگاه را تأیید کنید.")
+                .font(.appBody)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+            switch state {
+            case .code(let url, _):
+                if let target = URL(string: url) {
+                    Button { safari = SafariTarget(url: target) } label: {
+                        Label("ورود با سی‌نما", systemImage: "person.badge.key").frame(maxWidth: 320)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                }
+            case .error(let m):
+                Text(m).foregroundStyle(.red).multilineTextAlignment(.center)
+            case .loading:
+                ProgressView()
+            }
+            Spacer()
+            HStack(spacing: 24) {
+                Button("کد جدید") { attempt += 1 }
+                Button("تغییر کلید API") { app.phase = .needsKey }
+            }
+            .font(.appCallout)
+        }
+        .padding(Metrics.pagePad)
+        .frame(maxWidth: 520)
+        .frame(maxWidth: .infinity)
+        .sheet(item: $safari) { SafariView(url: $0.url).ignoresSafeArea() }
+    }
+    #endif
+
+    var body: some View {
+        Group {
+            #if os(tvOS)
+            tvBody
+            #else
+            phoneBody
+            #endif
+        }
         .task(id: attempt) { await run() }
     }
 
@@ -101,6 +156,20 @@ struct APIKeyView: View {
             Button("ذخیره") { app.saveKey(key) }.disabled(key.trimmed.isEmpty)
         }
         .frame(maxWidth: 1100)
-        .padding(80)
+        .padding(Metrics.pagePad)
     }
 }
+
+#if os(iOS)
+struct SafariTarget: Identifiable {
+    let url: URL
+    var id: URL { url }
+}
+
+/// The 30nama approval page, shown in-app so the viewer returns to the app on their own.
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    func makeUIViewController(context: Context) -> SFSafariViewController { SFSafariViewController(url: url) }
+    func updateUIViewController(_ controller: SFSafariViewController, context: Context) {}
+}
+#endif

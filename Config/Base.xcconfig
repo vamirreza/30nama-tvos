@@ -1,0 +1,4 @@
+// Shared build settings. Local values (client key, signing team) live in Secrets.xcconfig,
+// which is git-ignored; copy Secrets.example.xcconfig to create it.
+API_KEY =
+#include? "Secrets.xcconfig"

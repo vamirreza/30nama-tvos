@@ -1,0 +1,223 @@
+import SwiftUI
+
+// MARK: - Navigation
+
+enum ListSource: Hashable {
+    case archive(slug: String)
+    /// `json` is the advanced_search `parameters` object, already encoded.
+    case filter(json: String)
+    /// `imdb` (nm…) matches exactly; a name alone matches any credit containing one of its words.
+    case person(role: String, name: String, imdb: String?)
+}
+
+struct ListRoute: Hashable {
+    let title: String
+    let source: ListSource
+}
+
+enum Route: Hashable {
+    case title(Int)
+    case list(ListRoute)
+    case filters
+}
+
+@ViewBuilder
+func destination(for route: Route) -> some View {
+    switch route {
+    case .title(let id): TitleView(id: id)
+    case .list(let r): ListView(route: r)
+    case .filters: FiltersView()
+    }
+}
+
+/// Every tab sits in its own stack so Back returns to the same spot.
+struct Nav<Content: View>: View {
+    private let content: () -> Content
+    init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
+
+    var body: some View {
+        NavigationStack {
+            content().navigationDestination(for: Route.self) { destination(for: $0) }
+        }
+    }
+}
+
+// MARK: - Posters
+
+struct PosterCell: View {
+    let title: Title
+    var width: CGFloat = 230
+    /// nil opens the title page.
+    var onSelect: (() -> Void)?
+
+    private var poster: some View {
+        AsyncImage(url: title.posterMedium) { image in
+            image.resizable().scaledToFill()
+        } placeholder: {
+            Color.white.opacity(0.08)
+        }
+        .frame(width: width, height: width * 1.5)
+        .clipped()
+        .overlay(alignment: .bottom) {
+            if title.progress > 0 {
+                ProgressView(value: min(1, title.progress / 100))
+                    .tint(.red)
+                    .padding(10)
+            }
+        }
+        .overlay(alignment: .topLeading) {
+            if title.persianSubtitle {
+                Text("زیرنویس")
+                    .font(.caption2.bold())
+                    .padding(.horizontal, 10).padding(.vertical, 4)
+                    .background(Color.black.opacity(0.7), in: Capsule())
+                    .padding(10)
+            }
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 14) {
+            if let onSelect {
+                Button(action: onSelect) { poster }.buttonStyle(.borderless)
+            } else {
+                NavigationLink(value: Route.title(title.id)) { poster }.buttonStyle(.borderless)
+            }
+            VStack(spacing: 4) {
+                Text(title.name).font(.callout.weight(.medium)).lineLimit(1)
+                if let sub = title.episodeTitle { Text(sub).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+            }
+            .frame(width: width)
+        }
+        .frame(width: width)
+    }
+}
+
+struct TitleRow: View {
+    let title: String
+    let items: [Title]
+    var onSelect: ((Title) -> Void)?
+
+    private func action(for t: Title) -> (() -> Void)? {
+        guard let onSelect else { return nil }
+        return { onSelect(t) }
+    }
+
+    var body: some View {
+        if !items.isEmpty {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title).font(.title3.bold()).padding(.horizontal, 80)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 40) {
+                        ForEach(Array(items.enumerated()), id: \.offset) { _, t in
+                            PosterCell(title: t, onSelect: action(for: t))
+                        }
+                    }
+                    .padding(.horizontal, 80)
+                    .padding(.vertical, 30)
+                }
+                .scrollClipDisabled()
+            }
+        }
+    }
+}
+
+// MARK: - Paged grid
+
+@MainActor
+final class PagedLoader: ObservableObject {
+    @Published private(set) var items: [Title] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var error: String?
+    @Published private(set) var finished = false
+
+    private var page = 0
+    private let fetch: (Int) async throws -> Page
+
+    init(fetch: @escaping (Int) async throws -> Page) { self.fetch = fetch }
+
+    func loadMore() async {
+        guard !isLoading, !finished else { return }
+        isLoading = true
+        error = nil
+        do {
+            let p = try await fetch(page + 1)
+            page += 1
+            items += p.posts
+            // Another page only when the server says there is one.
+            finished = p.posts.isEmpty || (p.pages.map { page >= $0 } ?? true)
+        } catch {
+            self.error = describe(error)
+        }
+        isLoading = false
+    }
+}
+
+/// A paged poster grid. The next page loads when focus nears the last row.
+struct PagedGrid: View {
+    @StateObject private var loader: PagedLoader
+    private let empty: String
+    private let onSelect: ((Title) -> Void)?
+    private let columns = [GridItem(.adaptive(minimum: 230, maximum: 240), spacing: 40)]
+
+    init(empty: String = "چیزی پیدا نشد", onSelect: ((Title) -> Void)? = nil, fetch: @escaping (Int) async throws -> Page) {
+        _loader = StateObject(wrappedValue: PagedLoader(fetch: fetch))
+        self.empty = empty
+        self.onSelect = onSelect
+    }
+
+    private func cell(_ index: Int, _ t: Title) -> some View {
+        let action: (() -> Void)? = onSelect == nil ? nil : { onSelect?(t) }
+        return PosterCell(title: t, onSelect: action)
+            .onAppear {
+                if index >= loader.items.count - 8 { Task { await loader.loadMore() } }
+            }
+    }
+
+    var body: some View {
+        VStack(spacing: 30) {
+            LazyVGrid(columns: columns, spacing: 50) {
+                ForEach(Array(loader.items.enumerated()), id: \.offset) { i, t in cell(i, t) }
+            }
+            if loader.isLoading { ProgressView().padding(40) }
+            if let e = loader.error { Text(e).foregroundStyle(.red) }
+            if loader.items.isEmpty && !loader.isLoading && loader.error == nil && loader.finished {
+                Text(empty).foregroundStyle(.secondary).padding(40)
+            }
+        }
+        .task { if loader.items.isEmpty { await loader.loadMore() } }
+    }
+}
+
+// MARK: - Bits
+
+struct MetaLine: View {
+    let parts: [String]
+    var body: some View {
+        Text(parts.filter { !$0.isEmpty }.joined(separator: "  ·  "))
+            .font(.callout)
+            .foregroundStyle(.secondary)
+    }
+}
+
+struct ErrorNote: View {
+    let message: String
+    var retry: (() -> Void)?
+    var body: some View {
+        VStack(spacing: 24) {
+            Text(message).foregroundStyle(.red).multilineTextAlignment(.center)
+            if let retry { Button("تلاش دوباره", action: retry) }
+        }
+        .padding(60)
+    }
+}
+
+/// Chip that shows a check while on; used for filters and tabs.
+struct ChipButton: View {
+    let label: String
+    var on: Bool = false
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) { Text((on ? "✓ " : "") + label) }
+    }
+}

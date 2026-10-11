@@ -1,0 +1,40 @@
+name: SiNamaTV
+options:
+  bundleIdPrefix: com.vamirreza
+  deploymentTarget:
+    tvOS: "17.0"
+  createIntermediateGroups: true
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+targets:
+  SiNamaTV:
+    type: application
+    platform: tvOS
+    sources:
+      - path: Sources
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleDisplayName: "سی‌نما TV"
+        UILaunchScreen: {}
+        UIUserInterfaceStyle: Dark
+        # Filled in from Config/Secrets.xcconfig (git-ignored).
+        APIKey: "$(API_KEY)"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vamirreza.sinama.tv
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "3"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
+schemes:
+  SiNamaTV:
+    build:
+      targets:
+        SiNamaTV: all
+    run:
+      config: Debug
+    archive:
+      config: Release

@@ -29,11 +29,26 @@ targets:
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
+  SiNamaTVUITests:
+    type: bundle.ui-testing
+    platform: tvOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: SiNamaTV
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vamirreza.sinama.tv.uitests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   SiNamaTV:
     build:
       targets:
         SiNamaTV: all
+    test:
+      targets:
+        - SiNamaTVUITests
     run:
       config: Debug
     archive:

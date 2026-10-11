@@ -1,0 +1,96 @@
+import XCTest
+
+/// Drives the app with Siri Remote presses and saves screenshots, so layout and focus can be
+/// checked without a hand on the remote. Run with `xcodebuild test`; shots go to $SHOT_DIR.
+final class TourTests: XCTestCase {
+    private let remote = XCUIRemote.shared
+    private var shots: URL {
+        URL(fileURLWithPath: ProcessInfo.processInfo.environment["SHOT_DIR"] ?? "/private/tmp/claude-502/shots", isDirectory: true)
+    }
+
+    override func setUp() {
+        continueAfterFailure = true
+        try? FileManager.default.createDirectory(at: shots, withIntermediateDirectories: true)
+    }
+
+    private func shot(_ name: String, wait: TimeInterval = 2.5) {
+        Thread.sleep(forTimeInterval: wait)
+        let png = XCUIScreen.main.screenshot().pngRepresentation
+        try? png.write(to: shots.appendingPathComponent("\(name).png"))
+    }
+
+    private func press(_ b: XCUIRemote.Button, _ times: Int = 1, pause: TimeInterval = 0.6) {
+        for _ in 0..<times { remote.press(b); Thread.sleep(forTimeInterval: pause) }
+    }
+
+    func testTour() {
+        let app = XCUIApplication()
+        app.launch()
+        shot("01-home", wait: 6)
+
+        // Tab bar is a row at the top; Persian layout puts Home on the right, so "right" goes back.
+        press(.up, 3)
+        press(.left)   // search
+        shot("02-search-tab")
+        press(.select)
+        shot("03-search-open")
+        press(.menu)
+
+        press(.left)   // categories
+        press(.select)
+        shot("04-browse")
+        press(.menu)
+
+        press(.left)   // my list
+        press(.select)
+        shot("05-mylist")
+        press(.menu)
+
+        press(.left)   // notifications
+        press(.select)
+        shot("06-notifications")
+        press(.menu)
+
+        press(.left)   // account
+        press(.select)
+        shot("07-account")
+        press(.menu)
+    }
+
+    func testTitleAndPlayer() {
+        let app = XCUIApplication()
+        app.launch()
+        shot("10-home", wait: 6)
+        // Down from the tab bar lands on the hero's Play button; Details is one step toward the left.
+        press(.down)
+        press(.left)
+        shot("11-hero-focus")
+        press(.select)
+        shot("12-title", wait: 6)
+        press(.select) // Play is focused on the title page
+        shot("14-player-start", wait: 10)
+        shot("15-player-playing", wait: 8)
+        press(.playPause)
+        shot("16-player-paused")
+        press(.down)
+        shot("17-player-menu")
+    }
+
+    /// Plays the first Continue Watching title, which is known to stream for this account.
+    func testContinueWatching() {
+        let app = XCUIApplication()
+        app.launch()
+        shot("20-home", wait: 6)
+        press(.down, 2)          // hero actions, then the first row (rightmost poster in RTL)
+        shot("21-row-focus")
+        press(.select)
+        shot("22-title", wait: 6)
+        press(.select)           // Play / Resume
+        shot("23-player-start", wait: 10)
+        shot("24-player-playing", wait: 10)
+        press(.down)
+        shot("25-player-controls")
+        press(.menu)
+        shot("26-after-menu", wait: 3)
+    }
+}

@@ -7,7 +7,7 @@ enum Config {
     static let language = "fa"
 
     static let qrPollSeconds: UInt64 = 5
-    static let qrTTLSeconds: TimeInterval = 60
+    static let qrTTLSeconds: TimeInterval = 180
     static let observerEveryS: Double = 30
 
     private static let keyDefaults = "30nama.apiKey"

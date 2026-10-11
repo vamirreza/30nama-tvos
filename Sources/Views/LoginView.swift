@@ -66,9 +66,15 @@ struct LoginView: View {
             while !Task.isCancelled && Date() < deadline {
                 try? await Task.sleep(nanoseconds: Config.qrPollSeconds * 1_000_000_000)
                 if Task.isCancelled { return }
-                if let token = try? await API.qrLogin(qr.code) {
-                    app.loggedIn(token: token)
-                    return
+                do {
+                    let token = try await API.qrLogin(qr.code)
+                    NSLog("[qr] poll \(qr.code): token=\(token != nil)")
+                    if let token {
+                        app.loggedIn(token: token)
+                        return
+                    }
+                } catch {
+                    NSLog("[qr] poll \(qr.code) failed: \(error)")
                 }
             }
             // Codes are short-lived; issue a fresh one instead of polling a dead code.

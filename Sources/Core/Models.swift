@@ -243,10 +243,17 @@ struct AppNotification: Identifiable {
         guard let id = j["id"].int else { return nil }
         self.id = id
         title = j["title"].string ?? ""
-        text = j["text"].string ?? j["message"].string ?? j["content"].string ?? ""
+        text = Self.plain(j["text"].string ?? j["message"].string ?? j["content"].string ?? "")
         date = j["date"].string ?? j["date"]["j"].string ?? j["date"]["g"].string ?? ""
         read = j["read"].bool ?? false
         postId = j["post_id"].int
+    }
+
+    /// The server sends light HTML (`<small>`, `<br>`); the TV shows plain text.
+    private static func plain(_ html: String) -> String {
+        html.replacingOccurrences(of: "<br\\s*/?>", with: "\n", options: [.regularExpression, .caseInsensitive])
+            .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

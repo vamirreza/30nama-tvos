@@ -8,6 +8,7 @@ struct TitleView: View {
     @State private var lists = MyLists()
     @State private var error: String?
     @State private var season: Int?
+    @FocusState private var playFocused: Bool
 
     var body: some View {
         ZStack {
@@ -29,6 +30,9 @@ struct TitleView: View {
             error = nil
             let t = try await API.single(id)
             title = t
+            // The tab bar above would otherwise keep focus after the push; start on Play.
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            playFocused = true
             lists = (try? await API.myLists()) ?? lists
             if t.canStream && t.isSeries { await refreshStream() }
         } catch {
@@ -126,8 +130,10 @@ struct TitleView: View {
         if t.canStream {
             if let r = stream?.resume, r.time > 0 {
                 Button("▶ ادامه \(r.episodeName ?? "")") { router.play(id, fileId: r.fileId) }
+                    .focused($playFocused)
             } else {
                 Button("▶ پخش") { router.play(id) }
+                    .focused($playFocused)
             }
         } else {
             Button(t.comingSoon ? "به‌زودی" : "پخش آنلاین ندارد") {}.disabled(true)

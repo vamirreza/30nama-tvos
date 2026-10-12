@@ -140,6 +140,7 @@ struct BrowseView: View {
                         }
                         .frame(width: Metrics.tileWidth, height: Metrics.tileHeight)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
+                        .focusShape(cornerRadius: Theme.radius)
                     }
                     .tileButtonStyle()
                 }

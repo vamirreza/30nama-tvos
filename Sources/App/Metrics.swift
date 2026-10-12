@@ -118,3 +118,19 @@ extension View {
         #endif
     }
 }
+
+extension View {
+    /// Makes the tvOS focus effect (lift and shine) follow rounded corners instead of the default shape.
+    @ViewBuilder
+    func focusShape(cornerRadius: CGFloat) -> some View {
+        #if os(tvOS)
+        if #available(tvOS 18.0, *) {
+            contentShape(.hoverEffect, RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
+    }
+}

@@ -130,9 +130,7 @@ struct BrowseView: View {
                 ForEach(items) { m in
                     NavigationLink(value: Route.list(ListRoute(title: m.name, source: .archive(slug: m.slug)))) {
                         ZStack(alignment: .bottomLeading) {
-                            AsyncImage(url: m.thumb) { image in
-                                image.resizable().scaledToFill()
-                            } placeholder: {
+                            RemoteImage(url: m.thumb, maxPixel: 640) {
                                 LinearGradient(colors: [Theme.redDeep.opacity(0.7), Theme.card], startPoint: .topLeading, endPoint: .bottomTrailing)
                             }
                             .frame(width: Metrics.tileWidth, height: Metrics.tileHeight)

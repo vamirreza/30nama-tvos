@@ -69,9 +69,7 @@ struct TitleView: View {
 
     private func poster(_ t: Title) -> some View {
         let shape = RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
-        return AsyncImage(url: t.posterLarge) { image in
-            image.resizable().scaledToFill()
-        } placeholder: {
+        return RemoteImage(url: t.posterLarge, maxPixel: 800) {
             Theme.card
         }
         .frame(width: Metrics.titlePosterWidth, height: Metrics.titlePosterHeight)
@@ -112,9 +110,7 @@ struct TitleView: View {
         ZStack(alignment: .top) {
             AppBackground()
             GeometryReader { geo in
-                AsyncImage(url: t.cover) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
+                RemoteImage(url: t.cover, maxPixel: 1920) {
                     Color.clear
                 }
                 .frame(width: geo.size.width, height: geo.size.height * 0.8, alignment: .top)

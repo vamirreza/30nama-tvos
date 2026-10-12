@@ -153,7 +153,7 @@ struct PosterButtonStyle: ButtonStyle {
             configuration.label
                 .clipShape(shape)
                 .overlay(shape.strokeBorder(focused ? Color.white : Theme.stroke, lineWidth: focused ? 4 : 1))
-                .shadow(color: .black.opacity(focused ? 0.6 : 0.35), radius: focused ? 30 : 10, y: focused ? 18 : 6)
+                .shadow(color: .black.opacity(focused ? 0.6 : 0), radius: focused ? 30 : 0, y: focused ? 18 : 0)
                 .scaleEffect(focused ? Theme.focusScale : (configuration.isPressed ? 0.97 : 1))
                 .animation(.easeOut(duration: 0.16), value: focused)
         }

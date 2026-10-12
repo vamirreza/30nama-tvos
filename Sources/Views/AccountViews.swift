@@ -197,9 +197,7 @@ struct ProfileView: View {
     private func account(_ u: User) -> some View {
         Card {
             HStack(spacing: 30) {
-                AsyncImage(url: u.avatar) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
+                RemoteImage(url: u.avatar, maxPixel: 300) {
                     ZStack {
                         Theme.cardStrong
                         Image(systemName: "person.fill").foregroundStyle(Theme.textDim)

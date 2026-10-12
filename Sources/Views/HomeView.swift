@@ -125,9 +125,7 @@ private struct PhoneHero: View {
         ZStack(alignment: .bottom) {
             Theme.background
             Color.clear.overlay {
-                AsyncImage(url: title.posterBig ?? title.cover) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
+                RemoteImage(url: title.posterBig ?? title.cover, maxPixel: 1400) {
                     Color.white.opacity(0.05)
                 }
             }
@@ -195,9 +193,7 @@ private struct Hero: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: Metrics.heroHeight)
                 .overlay {
-                    AsyncImage(url: title.cover) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
+                    RemoteImage(url: title.cover, maxPixel: 1920) {
                         Color.white.opacity(0.05)
                     }
                 }

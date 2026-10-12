@@ -53,9 +53,7 @@ struct PosterCell: View {
     var onSelect: (() -> Void)?
 
     private var poster: some View {
-        AsyncImage(url: title.posterMedium) { image in
-            image.resizable().scaledToFill()
-        } placeholder: {
+        RemoteImage(url: title.posterMedium, maxPixel: 520) {
             ZStack {
                 Theme.card
                 LogoMark(height: width * 0.3).opacity(0.25)

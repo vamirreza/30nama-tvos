@@ -54,23 +54,29 @@ final class ContentProvider: TVTopShelfContentProvider {
             // Darken the bottom and the leading side for the text.
             let colors = [UIColor.black.withAlphaComponent(0).cgColor, UIColor.black.withAlphaComponent(0.85).cgColor] as CFArray
             let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1])!
-            ctx.cgContext.drawLinearGradient(gradient, start: CGPoint(x: 0, y: size.height * 0.35), end: CGPoint(x: 0, y: size.height), options: [])
+            ctx.cgContext.drawLinearGradient(gradient, start: CGPoint(x: 0, y: size.height * 0.4), end: CGPoint(x: 0, y: size.height), options: [])
 
-            let titleStyle = NSMutableParagraphStyle()
-            titleStyle.lineBreakMode = .byTruncatingTail
-            let titleAttrs: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: 76, weight: .bold),
-                .foregroundColor: UIColor.white,
-                .paragraphStyle: titleStyle,
-            ]
+            // The shelf shows this artwork cropped to 16:9, so only the middle ~1280 pt is always visible,
+            // and the system's Play / More Info buttons sit at the bottom centre.
+            let textWidth: CGFloat = 1100
+            let center = NSMutableParagraphStyle()
+            center.alignment = .center
+            center.lineBreakMode = .byTruncatingTail
+
+            var fontSize: CGFloat = 76
+            func titleAttrs(_ size: CGFloat) -> [NSAttributedString.Key: Any] {
+                [.font: UIFont.systemFont(ofSize: size, weight: .bold), .foregroundColor: UIColor.white, .paragraphStyle: center]
+            }
+            while fontSize > 44, (item.title as NSString).size(withAttributes: titleAttrs(fontSize)).width > textWidth { fontSize -= 4 }
+
             let subAttrs: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: 38, weight: .medium),
-                .foregroundColor: UIColor.white.withAlphaComponent(0.75),
+                .font: UIFont.systemFont(ofSize: 36, weight: .medium),
+                .foregroundColor: UIColor.white.withAlphaComponent(0.8),
+                .paragraphStyle: center,
             ]
-            let textWidth = size.width - 240
-            let subtitle = [item.subtitle].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "  ·  ")
-            (item.title as NSString).draw(in: CGRect(x: 120, y: size.height - 335, width: textWidth, height: 100), withAttributes: titleAttrs)
-            (subtitle as NSString).draw(in: CGRect(x: 120, y: size.height - 235, width: textWidth, height: 60), withAttributes: subAttrs)
+            let left = (size.width - textWidth) / 2
+            (item.title as NSString).draw(in: CGRect(x: left, y: 395, width: textWidth, height: 95), withAttributes: titleAttrs(fontSize))
+            (item.subtitle as NSString).draw(in: CGRect(x: left, y: 490, width: textWidth, height: 50), withAttributes: subAttrs)
         }
 
         let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: TopShelfStore.group) ?? FileManager.default.temporaryDirectory

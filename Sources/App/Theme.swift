@@ -223,7 +223,7 @@ struct MetaBadges: View {
             }
             if let m = title.minutes { Text(tr("%d دقیقه", m)).font(.appCalloutMedium).foregroundStyle(Theme.textDim) }
             if let age = title.age, !age.isEmpty { Badge(text: age, kind: .outline) }
-            if let s = title.imdb { Badge(text: "IMDb \(s)", kind: .imdb) }
+            if let s = title.imdb, s > 0 { Badge(text: "IMDb \(s)", kind: .imdb) }
             if let s = title.nama30 { Badge(text: tr("سی‌نما %@", "\(s)"), kind: .solid) }
             if title.persianSubtitle { Badge(text: tr("زیرنویس فارسی"), kind: .glass, icon: "captions.bubble.fill") }
         }
@@ -245,7 +245,7 @@ struct ChoiceRow<T: Hashable>: View {
     let onPick: (T) -> Void
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.chipMin), spacing: Metrics.itemSpacing)], alignment: .leading, spacing: Metrics.itemSpacing) {
+        ChipFlow {
             ForEach(options, id: \.self) { o in
                 ChipButton(label: label(o), on: o == selection) { onPick(o) }
             }
@@ -263,5 +263,61 @@ struct Card<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
+    }
+}
+
+// MARK: - Wrapping chips
+
+/// Lays chips out left to right (right to left in Persian) and wraps to the next line, so every chip
+/// is as wide as its label instead of a fixed column that cuts English names short.
+private struct WrapLayout: Layout {
+    var spacing: CGFloat
+    var rightToLeft: Bool
+
+    private func rows(_ subviews: Subviews, in width: CGFloat) -> [[(index: Int, size: CGSize)]] {
+        var rows: [[(Int, CGSize)]] = [[]]
+        var used: CGFloat = 0
+        for (i, view) in subviews.enumerated() {
+            let size = view.sizeThatFits(.init(width: width, height: nil))
+            if used > 0, used + spacing + size.width > width {
+                rows.append([])
+                used = 0
+            }
+            rows[rows.count - 1].append((i, size))
+            used += (used > 0 ? spacing : 0) + size.width
+        }
+        return rows.filter { !$0.isEmpty }.map { $0.map { (index: $0.0, size: $0.1) } }
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        let lines = rows(subviews, in: width)
+        let height = lines.map { $0.map(\.size.height).max() ?? 0 }.reduce(0, +) + spacing * CGFloat(max(0, lines.count - 1))
+        return CGSize(width: width.isFinite ? width : 0, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for line in rows(subviews, in: bounds.width) {
+            let rowHeight = line.map(\.size.height).max() ?? 0
+            var x = rightToLeft ? bounds.maxX : bounds.minX
+            for item in line {
+                let origin = CGPoint(x: rightToLeft ? x - item.size.width : x, y: y + (rowHeight - item.size.height) / 2)
+                subviews[item.index].place(at: origin, proposal: .init(item.size))
+                x += (rightToLeft ? -1 : 1) * (item.size.width + spacing)
+            }
+            y += rowHeight + spacing
+        }
+    }
+}
+
+/// A wrapping row of chips.
+struct ChipFlow<Content: View>: View {
+    @Environment(\.layoutDirection) private var direction
+    var spacing: CGFloat = Metrics.itemSpacing
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        WrapLayout(spacing: spacing, rightToLeft: direction == .rightToLeft) { content() }
     }
 }

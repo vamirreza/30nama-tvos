@@ -37,6 +37,7 @@ enum Metrics {
     static let emptyIcon: CGFloat = 64
     static let launchLogo: CGFloat = 130
     static let dot: CGFloat = 10
+    static let fillOnPhone: CGFloat? = nil
     static let progressBar: CGFloat = 8
     static let progressInset: CGFloat = 18
     static let dotActive: CGFloat = 34
@@ -78,6 +79,7 @@ enum Metrics {
     static let emptyIcon: CGFloat = 40
     static let launchLogo: CGFloat = 56
     static let dot: CGFloat = 6
+    static let fillOnPhone: CGFloat? = .infinity
     static let progressBar: CGFloat = 4
     static let progressInset: CGFloat = 10
     static let dotActive: CGFloat = 16

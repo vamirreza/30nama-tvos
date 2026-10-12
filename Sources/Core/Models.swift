@@ -151,7 +151,7 @@ struct User {
         allowedToStream = j["user_allowed_to_stream"].bool ?? true
         avatar = j["user_avatar"].url
         daysLeft = j["user_expire"]["days"].int
-        expiresOn = j["user_expire"]["j"].string?.split(separator: " ").first.map(String.init)
+        expiresOn = j["user_expire"]["j"].string?.split(separator: " ").first.map(String.init).map(ServerText.jalaliDay)
     }
 }
 
@@ -246,8 +246,14 @@ struct AppNotification: Identifiable {
     init?(_ j: J) {
         guard let id = j["id"].int else { return nil }
         self.id = id
-        title = ServerText.english(j["title"].string ?? "")
-        text = ServerText.english(Self.plain(j["text"].string ?? j["message"].string ?? j["content"].string ?? ""))
+        let heading = ServerText.english(j["title"].string ?? "")
+        title = heading
+        let body = ServerText.english(Self.plain(j["text"].string ?? j["message"].string ?? j["content"].string ?? ""))
+        // The body usually starts by repeating the title; show it once.
+        let first = body.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+        text = first.first.map { $0.trimmingCharacters(in: .whitespaces) == heading.trimmingCharacters(in: .whitespaces) } == true
+            ? (first.count > 1 ? String(first[1]).trimmingCharacters(in: .whitespacesAndNewlines) : "")
+            : body
         date = ServerText.date(j["date"].string ?? j["date"]["j"].string ?? j["date"]["g"].string ?? "")
         read = j["read"].bool ?? false
         postId = j["post_id"].int

@@ -124,6 +124,21 @@ enum ServerText {
         })
     }
 
+    /// "1405-09-30" (Persian calendar) -> "Dec 21, 2026"; unchanged in Persian.
+    static func jalaliDay(_ s: String) -> String {
+        guard Lang.current == .en else { return s }
+        let p = latinDigits(s).split(whereSeparator: { $0 == "-" || $0 == "/" }).compactMap { Int($0) }
+        guard p.count == 3 else { return s }
+        var calendar = Calendar(identifier: .persian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .current
+        guard let date = calendar.date(from: DateComponents(year: p[0], month: p[1], day: p[2], hour: 12)) else { return s }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en")
+        f.timeZone = TimeZone(identifier: "UTC")
+        f.dateFormat = "MMM d, yyyy"
+        return f.string(from: date)
+    }
+
     private static let months = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"]
 
     /// "۱۷ مهر ۱۴۰۵ جمعه" -> "Oct 9, 2026".

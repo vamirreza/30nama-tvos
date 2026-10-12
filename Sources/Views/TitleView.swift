@@ -223,7 +223,7 @@ struct TitleView: View {
         VStack(alignment: .leading, spacing: 16) {
             SectionHeader(title: tr("بازیگران و سازندگان"))
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: Metrics.itemSpacing) {
+                HStack(spacing: Metrics.itemSpacing) {
                     ForEach(Array(t.directors.prefix(2).enumerated()), id: \.offset) { _, p in
                         personLink(p, role: "director", label: tr("کارگردان: %@", p.name), icon: "megaphone.fill")
                     }

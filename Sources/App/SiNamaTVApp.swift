@@ -73,9 +73,6 @@ struct MainTabs: View {
             Nav { SearchView() }.tabItem { Label(tr("جستجو"), systemImage: "magnifyingglass") }.tag(1)
             Nav { BrowseView() }.tabItem { Label(tr("دسته‌بندی"), systemImage: "square.grid.2x2") }.tag(2)
             Nav { MyListView() }.tabItem { Label(tr("لیست من"), systemImage: "bookmark") }.tag(3)
-            #if os(tvOS)
-            Nav { NotificationsView() }.tabItem { Label(tr("اعلان‌ها"), systemImage: "bell") }.tag(4)
-            #endif
             Nav { ProfileView() }.tabItem { Label(tr("حساب"), systemImage: "person.crop.circle") }.tag(5)
         }
     }

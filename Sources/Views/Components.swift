@@ -105,7 +105,7 @@ struct PosterCell: View {
                         Image(systemName: "star.fill").foregroundStyle(Theme.gold)
                         Text(String(format: "%.1f", s))
                     }
-                    if let y = title.year { Text("\(y)") }
+                    if let y = title.year { Text(verbatim: "\(y)") }
                 }
                 .font(.appCaption)
                 .foregroundStyle(Theme.textDim)

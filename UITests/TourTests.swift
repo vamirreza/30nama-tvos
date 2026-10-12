@@ -17,10 +17,54 @@ final class TourTests: XCTestCase {
         Thread.sleep(forTimeInterval: wait)
         let png = XCUIScreen.main.screenshot().pngRepresentation
         try? png.write(to: shots.appendingPathComponent("\(name).png"))
+        // Also kept in the result bundle, which is the only way to get shots off a real Apple TV.
+        let attachment = XCTAttachment(data: png, uniformTypeIdentifier: "public.png")
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     private func press(_ b: XCUIRemote.Button, _ times: Int = 1, pause: TimeInterval = 0.6) {
         for _ in 0..<times { remote.press(b); Thread.sleep(forTimeInterval: pause) }
+    }
+
+    /// English layout on whatever device runs it (Left-to-right: Home is the first tab, "right" goes on).
+    func testEnglishLayout() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "en"]
+        app.launch()
+        shot("e01-home", wait: 8)
+
+        // The hero's Details button opens the title page.
+        press(.down)
+        press(.right)
+        press(.select)
+        shot("e02-title", wait: 4)
+        press(.down, 3)
+        shot("e03-title-lower", wait: 2)
+        press(.menu)
+        press(.up, 4)
+
+        press(.right); press(.select); shot("e04-search", wait: 3); press(.up)
+        press(.right); press(.select); shot("e05-browse", wait: 3)
+        press(.down); press(.select); shot("e06-advanced", wait: 3)
+        press(.down, 4); shot("e07-advanced-lower", wait: 2)
+        press(.menu); press(.up, 2)
+        press(.right); press(.select); shot("e08-mylist", wait: 3); press(.up)
+        press(.right); press(.select); shot("e09-account", wait: 3)
+        press(.down, 4); shot("e10-account-lower", wait: 2)
+    }
+
+    /// My List and Account in English.
+    func testEnglishAccount() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "en"]
+        app.launch()
+        Thread.sleep(forTimeInterval: 8)
+        press(.up, 4)
+        press(.right, 3); press(.select); shot("a01-mylist", wait: 3)
+        press(.up); press(.right); press(.select); shot("a02-account", wait: 3)
+        press(.down, 5); shot("a03-account-lower", wait: 2)
     }
 
     func testTour() {

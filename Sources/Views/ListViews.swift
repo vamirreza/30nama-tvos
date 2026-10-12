@@ -243,7 +243,7 @@ struct FiltersView: View {
     private func group(_ title: String, _ options: [Option], selected: @escaping (String) -> Bool, pick: @escaping (String) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             SectionHeader(title: title)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: Metrics.chipMin), spacing: 20)], alignment: .leading, spacing: 20) {
+            ChipFlow(spacing: 20) {
                 ForEach(options) { o in
                     ChipButton(label: o.name, on: selected(o.value)) { pick(o.value) }
                 }

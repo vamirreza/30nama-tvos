@@ -165,17 +165,19 @@ struct ProfileView: View {
                 setting(tr("صدا"), icon: "speaker.wave.2", options: AudioPref.allCases, selection: settings.audio, label: { $0.label }) { settings.audio = $0 }
                 setting(tr("کیفیت تصویر"), icon: "sparkles.tv", options: Quality.allCases, selection: settings.quality, label: { $0.label }) { settings.quality = $0 }
 
-                #if os(iOS)
-                NavigationLink(value: Route.notifications) {
-                    Label(tr("اعلان‌ها"), systemImage: "bell").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.pill)
-                #endif
-
-                HStack {
-                    Button { confirmLogout = true } label: { Label(tr("خروج از حساب"), systemImage: "rectangle.portrait.and.arrow.right") }
-                        .buttonStyle(.pill)
+                // Notifications live here on both platforms; six tabs do not fit the Apple TV tab bar in English.
+                HStack(spacing: Metrics.itemSpacing) {
+                    NavigationLink(value: Route.notifications) {
+                        Label(tr("اعلان‌ها"), systemImage: "bell").frame(maxWidth: Metrics.fillOnPhone)
+                    }
+                    .buttonStyle(.pill)
+                    Button { confirmLogout = true } label: {
+                        Label(tr("خروج از حساب"), systemImage: "rectangle.portrait.and.arrow.right").frame(maxWidth: Metrics.fillOnPhone)
+                    }
+                    .buttonStyle(.pill)
+                    #if os(tvOS)
                     Spacer()
+                    #endif
                 }
 
                 VStack(spacing: 10) {

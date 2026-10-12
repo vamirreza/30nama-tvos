@@ -35,7 +35,10 @@ struct HomeView: View {
             do {
                 error = nil
                 home = try await API.homeStream()
-                if let hero = home?.hero { TopShelfStore.save(hero) }
+                if let h = home {
+                    var seen = Set<Int>()
+                    TopShelfStore.save((h.hero + h.suggested + h.movies + h.series + h.anime).filter { seen.insert($0.id).inserted })
+                }
             } catch {
                 self.error = describe(error)
             }
@@ -44,7 +47,7 @@ struct HomeView: View {
     }
 }
 
-/// The featured titles, one at a time: auto-advances, swipes on iPhone, and the dots show where it is.
+/// The featured titles, one at a time: auto-advances and the dots show where it is.
 private struct HeroCarousel: View {
     let titles: [Title]
     @State private var index = 0
@@ -52,44 +55,126 @@ private struct HeroCarousel: View {
     private let interval: UInt64 = 7_000_000_000
 
     private func go(_ i: Int) {
-        withAnimation(.easeInOut(duration: 0.6)) { index = (i + titles.count) % titles.count }
+        withAnimation(.easeInOut(duration: 0.5)) { index = (i + titles.count) % titles.count }
         tick += 1
     }
 
     var body: some View {
+        pager
+            .frame(height: Metrics.heroHeight)
+            .overlay(alignment: .bottom) { dots.padding(.bottom, Metrics.heroDotsPad) }
+            .tvFocusSection()
+            .task(id: tick) {
+                guard titles.count > 1 else { return }
+                try? await Task.sleep(nanoseconds: interval)
+                if !Task.isCancelled { go(index + 1) }
+            }
+    }
+
+    @ViewBuilder private var pager: some View {
+        #if os(iOS)
+        // Real paging: the next poster follows the finger.
+        TabView(selection: $index) {
+            ForEach(Array(titles.enumerated()), id: \.offset) { i, t in
+                PhoneHero(title: t).tag(i)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .onChange(of: index) { _, _ in tick += 1 }
+        #else
         ZStack {
             ForEach(Array(titles.enumerated()), id: \.offset) { i, t in
                 if i == index { Hero(title: t).id(t.id).transition(.opacity) }
             }
         }
-        .frame(height: Metrics.heroHeight)
-        .overlay(alignment: .bottom) { dots.padding(.bottom, Metrics.heroDotsPad) }
-        .tvFocusSection()
-        #if os(iOS)
-        .gesture(DragGesture(minimumDistance: 30).onEnded { v in
-            if abs(v.translation.width) > abs(v.translation.height) { go(index + (v.translation.width < 0 ? 1 : -1)) }
-        })
         #endif
-        .task(id: tick) {
-            guard titles.count > 1 else { return }
-            try? await Task.sleep(nanoseconds: interval)
-            if !Task.isCancelled { go(index + 1) }
-        }
     }
 
     private var dots: some View {
         HStack(spacing: 8) {
             ForEach(titles.indices, id: \.self) { i in
                 Capsule()
-                    .fill(i == index ? Theme.red : Color.white.opacity(0.35))
+                    .fill(i == index ? Color.white : Color.white.opacity(0.35))
                     .frame(width: i == index ? Metrics.dotActive : Metrics.dot, height: Metrics.dot)
                     .onTapGesture { go(i) }
             }
         }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(.black.opacity(0.25), in: Capsule())
         .animation(.easeInOut(duration: 0.3), value: index)
         .environment(\.layoutDirection, .leftToRight)
     }
 }
+
+#if os(iOS)
+/// iPhone hero in the style of the Apple TV app: a tall poster running under the status bar,
+/// with the title, details and Play centered over its fade.
+private struct PhoneHero: View {
+    @EnvironmentObject private var router: Router
+    let title: Title
+
+    private var details: String {
+        (title.genres.prefix(2).map { $0 } + [title.year.map { "\($0)" } ?? "", title.age ?? ""]).filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            Color.clear.overlay {
+                AsyncImage(url: title.posterLarge ?? title.cover) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Color.white.opacity(0.05)
+                }
+            }
+            .clipped()
+
+            LinearGradient(stops: [
+                .init(color: .clear, location: 0.4),
+                .init(color: Theme.background.opacity(0.85), location: 0.72),
+                .init(color: Theme.background, location: 1),
+            ], startPoint: .top, endPoint: .bottom)
+
+            VStack(spacing: 12) {
+                if title.persianSubtitle { Badge(text: "زیرنویس فارسی", kind: .glass, icon: "captions.bubble.fill") }
+                Text(title.name)
+                    .font(.appTitle).multilineTextAlignment(.center).lineLimit(2)
+                    .shadow(color: .black.opacity(0.7), radius: 10)
+                HStack(spacing: 10) {
+                    if let s = title.imdb { Badge(text: "IMDb \(s)", kind: .imdb) }
+                    Text(details).font(.appCallout).foregroundStyle(Theme.textDim).lineLimit(1)
+                }
+                HStack(spacing: 12) {
+                    if title.isSeries {
+                        NavigationLink(value: Route.title(title.id)) { playLabel }.buttonStyle(.plain)
+                    } else {
+                        Button { router.play(title.id) } label: { playLabel }.buttonStyle(.plain)
+                    }
+                    NavigationLink(value: Route.title(title.id)) {
+                        Image(systemName: "info")
+                            .font(.system(size: 20, weight: .semibold))
+                            .frame(width: 50, height: 50)
+                            .background(Color.white.opacity(0.2), in: Circle())
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("جزئیات")
+                }
+                .padding(.top, 4)
+            }
+            .padding(.horizontal, Metrics.pagePad)
+            .padding(.bottom, 52)
+        }
+    }
+
+    private var playLabel: some View {
+        Label("پخش", systemImage: "play.fill")
+            .font(.appHeadline)
+            .foregroundStyle(.black)
+            .frame(width: 190, height: 50)
+            .background(Color.white, in: Capsule())
+    }
+}
+#endif
 
 private struct Hero: View {
     @EnvironmentObject private var router: Router

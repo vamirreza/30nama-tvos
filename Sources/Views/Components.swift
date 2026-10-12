@@ -201,7 +201,7 @@ struct PagedGrid: View {
             LazyVGrid(columns: columns, spacing: Metrics.gridRowGap) {
                 ForEach(Array(loader.items.enumerated()), id: \.offset) { i, t in cell(i, t) }
             }
-            if loader.isLoading { ProgressView().tint(Theme.red).padding(40) }
+            if loader.isLoading { ProgressView().tint(.white).padding(40) }
             if let e = loader.error { Text(e).foregroundStyle(Theme.red) }
             if loader.items.isEmpty && !loader.isLoading && loader.error == nil && loader.finished {
                 EmptyState(icon: "film.stack", text: empty)
@@ -265,7 +265,7 @@ struct LaunchView: View {
     var body: some View {
         VStack(spacing: 40) {
             Logo(height: Metrics.launchLogo)
-            ProgressView().tint(Theme.red)
+            ProgressView().tint(.white)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appBackground()

@@ -90,7 +90,7 @@ struct NotificationsView: View {
                 PageTitle(text: "اعلان‌ها").padding(.bottom, Metrics.itemSpacing)
                 if let error { Text(error).foregroundStyle(Theme.red) }
                 if loaded && items.isEmpty { EmptyState(icon: "bell.slash", text: "اعلان تازه‌ای ندارید.") }
-                if !loaded && error == nil { ProgressView().tint(Theme.red).frame(maxWidth: .infinity).padding(60) }
+                if !loaded && error == nil { ProgressView().tint(.white).frame(maxWidth: .infinity).padding(60) }
                 ForEach(items) { n in
                     Button { open(n) } label: {
                         HStack(alignment: .top, spacing: 16) {

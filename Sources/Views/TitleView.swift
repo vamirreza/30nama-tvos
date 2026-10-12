@@ -12,11 +12,11 @@ struct TitleView: View {
 
     var body: some View {
         ZStack {
+            AppBackground()
             if let t = title { content(t) }
             else if let error { ErrorNote(message: error) { Task { await load() } } }
-            else { ProgressView().tint(Theme.red) }
+            else { ProgressView().controlSize(.large).tint(.white) }
         }
-        .background(AppBackground())
         .task { await load() }
         // Back from the player: the saved position has moved.
         .onChange(of: router.player == nil) { _, closed in

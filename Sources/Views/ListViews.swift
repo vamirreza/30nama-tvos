@@ -104,7 +104,7 @@ struct BrowseView: View {
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {
-                    ProgressView().tint(Theme.red).frame(maxWidth: .infinity).padding(Metrics.pagePad)
+                    ProgressView().tint(.white).frame(maxWidth: .infinity).padding(Metrics.pagePad)
                 }
             }
             .padding(.horizontal, Metrics.pagePad)
@@ -216,7 +216,7 @@ struct FiltersView: View {
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {
-                    ProgressView().tint(Theme.red).frame(maxWidth: .infinity).padding(Metrics.pagePad)
+                    ProgressView().tint(.white).frame(maxWidth: .infinity).padding(Metrics.pagePad)
                 }
             }
             .padding(.horizontal, Metrics.pagePad)

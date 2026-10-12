@@ -5,7 +5,6 @@ import UIKit
 /// quality, and the skip-intro / next-episode buttons. Sits above the player and lets every touch
 /// outside its own buttons fall through to AVPlayerViewController.
 final class PlayerChrome: UIView, UIGestureRecognizerDelegate {
-    private let closeButton = UIButton(type: .system)
     private let menuButton = UIButton(type: .system)
     private let actionStack = UIStackView()
     private var hideWork: DispatchWorkItem?
@@ -32,9 +31,7 @@ final class PlayerChrome: UIView, UIGestureRecognizerDelegate {
     }
 
     private func build() {
-        chromeButton(closeButton, symbol: "xmark")
-        closeButton.addAction(UIAction { [weak self] _ in self?.onClose() }, for: .touchUpInside)
-
+        // No close button of our own: the system player already draws one on iPhone.
         chromeButton(menuButton, symbol: "ellipsis")
         menuButton.showsMenuAsPrimaryAction = true
         menuButton.isHidden = true
@@ -46,10 +43,6 @@ final class PlayerChrome: UIView, UIGestureRecognizerDelegate {
 
         let guide = safeAreaLayoutGuide
         NSLayoutConstraint.activate([
-            closeButton.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
-            closeButton.topAnchor.constraint(equalTo: guide.topAnchor, constant: 12),
-            closeButton.widthAnchor.constraint(equalToConstant: 44),
-            closeButton.heightAnchor.constraint(equalToConstant: 44),
             menuButton.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
             menuButton.topAnchor.constraint(equalTo: guide.topAnchor, constant: 12),
             menuButton.widthAnchor.constraint(equalToConstant: 44),
@@ -84,16 +77,14 @@ final class PlayerChrome: UIView, UIGestureRecognizerDelegate {
 
     // MARK: visibility
 
-    /// Shows the close and menu buttons, then fades them out again.
+    /// Shows the menu button, then fades them out again.
     @objc func pulse() {
         hideWork?.cancel()
         UIView.animate(withDuration: 0.2) {
-            self.closeButton.alpha = 1
             self.menuButton.alpha = 1
         }
         let work = DispatchWorkItem { [weak self] in
             UIView.animate(withDuration: 0.4) {
-                self?.closeButton.alpha = 0
                 self?.menuButton.alpha = 0
             }
         }
@@ -104,7 +95,7 @@ final class PlayerChrome: UIView, UIGestureRecognizerDelegate {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let hit = super.hitTest(point, with: event)
         // Faded-out buttons must not swallow taps meant for the player.
-        if let hit, hit === closeButton || hit === menuButton, hit.alpha < 0.1 { return nil }
+        if let hit, hit === menuButton, hit.alpha < 0.1 { return nil }
         return hit === self ? nil : hit
     }
 

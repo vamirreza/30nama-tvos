@@ -67,7 +67,7 @@ struct LoginView: View {
                             .shadow(color: Theme.red.opacity(0.45), radius: 60)
                     }
                 default:
-                    ProgressView().tint(Theme.red)
+                    ProgressView().tint(.white)
                 }
             }
             .frame(width: 520, height: 520)
@@ -103,7 +103,7 @@ struct LoginView: View {
                     case .error(let m):
                         Text(m).foregroundStyle(Theme.red).multilineTextAlignment(.center)
                     case .loading:
-                        ProgressView().tint(Theme.red)
+                        ProgressView().tint(.white)
                     }
                 }
                 .frame(maxWidth: .infinity)

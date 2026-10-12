@@ -51,7 +51,7 @@ enum Metrics {
     static let gridMax: CGFloat = 170
     static let gridGap: CGFloat = 12
     static let gridRowGap: CGFloat = 16
-    static let heroHeight: CGFloat = 420
+    static let heroHeight: CGFloat = 640
     static let heroTextWidth: CGFloat = .infinity
     static let sectionGap: CGFloat = 22
     static let titlePosterWidth: CGFloat = 150
@@ -76,7 +76,7 @@ enum Metrics {
     static let emptyIcon: CGFloat = 40
     static let launchLogo: CGFloat = 56
     static let dot: CGFloat = 6
-    static let dotActive: CGFloat = 18
+    static let dotActive: CGFloat = 16
     static let heroDotsPad: CGFloat = 8
     static let heroPlotLines = 2
     static let heroButtonsBottom: CGFloat = 18

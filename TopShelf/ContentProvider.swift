@@ -20,7 +20,6 @@ final class ContentProvider: TVTopShelfContentProvider {
         let cards = items.compactMap { item -> TVTopShelfCarouselItem? in
             guard let file = files[item.id] else { return nil }
             let card = TVTopShelfCarouselItem(identifier: "\(item.id)")
-            card.title = item.title
             card.setImageURL(file, for: .screenScale1x)
             card.setImageURL(file, for: .screenScale2x)
             if let url = URL(string: "sinama://play/\(item.id)") {
@@ -63,9 +62,9 @@ final class ContentProvider: TVTopShelfContentProvider {
                 .foregroundColor: UIColor.white.withAlphaComponent(0.75),
             ]
             let textWidth = size.width - 240
-            let subtitle = [item.genre, item.subtitle].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "  ·  ")
-            (item.title as NSString).draw(in: CGRect(x: 120, y: size.height - 230, width: textWidth, height: 100), withAttributes: titleAttrs)
-            (subtitle as NSString).draw(in: CGRect(x: 120, y: size.height - 120, width: textWidth, height: 60), withAttributes: subAttrs)
+            let subtitle = [item.subtitle].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "  ·  ")
+            (item.title as NSString).draw(in: CGRect(x: 120, y: size.height - 335, width: textWidth, height: 100), withAttributes: titleAttrs)
+            (subtitle as NSString).draw(in: CGRect(x: 120, y: size.height - 235, width: textWidth, height: 60), withAttributes: subAttrs)
         }
 
         let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: TopShelfStore.group) ?? FileManager.default.temporaryDirectory

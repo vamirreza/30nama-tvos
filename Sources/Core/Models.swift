@@ -26,6 +26,7 @@ struct Title: Identifiable {
     let directors: [Person]
     let posterMedium: URL?
     let posterLarge: URL?
+    let posterBig: URL?
     let cover: URL?
     let imdb: Double?
     let nama30: Double?
@@ -61,6 +62,7 @@ struct Title: Identifiable {
         func pick(_ size: String) -> URL? { poster["jpg"][size].url ?? poster["webp"][size].url }
         posterMedium = pick("medium") ?? pick("large") ?? pick("small")
         posterLarge = pick("large") ?? pick("medium") ?? pick("big")
+        posterBig = pick("big") ?? pick("large") ?? pick("medium")
         cover = j["image"]["cover"]["jpg"].url ?? j["image"]["cover"]["webp"].url
         imdb = j["score"]["imdb"]["score"].double
         nama30 = j["score"]["30nama"]["score"].double

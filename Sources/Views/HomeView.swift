@@ -24,7 +24,11 @@ struct HomeView: View {
                 }
             }
         }
+        #if os(iOS)
+        .background(Theme.background.ignoresSafeArea())
+        #else
         .appBackground()
+        #endif
         .task { await load() }
     }
 
@@ -119,8 +123,9 @@ private struct PhoneHero: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            Theme.background
             Color.clear.overlay {
-                AsyncImage(url: title.posterLarge ?? title.cover) { image in
+                AsyncImage(url: title.posterBig ?? title.cover) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
                     Color.white.opacity(0.05)
@@ -140,10 +145,10 @@ private struct PhoneHero: View {
             VStack(spacing: 12) {
                 if title.persianSubtitle { Badge(text: "زیرنویس فارسی", kind: .glass, icon: "captions.bubble.fill") }
                 Text(title.name)
-                    .font(.appTitle).multilineTextAlignment(.center).lineLimit(2)
+                    .font(.appTitle2).multilineTextAlignment(.center).lineLimit(2)
                     .shadow(color: .black.opacity(0.7), radius: 10)
                 HStack(spacing: 10) {
-                    if let s = title.imdb { Badge(text: "IMDb \(s)", kind: .imdb) }
+                    if let s = title.imdb, s > 0 { Badge(text: "IMDb \(s)", kind: .imdb) }
                     Text(details).font(.appCallout).foregroundStyle(Theme.textDim).lineLimit(1)
                 }
                 HStack(spacing: 12) {

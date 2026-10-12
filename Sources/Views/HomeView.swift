@@ -127,12 +127,15 @@ private struct PhoneHero: View {
                 }
             }
             .clipped()
-
-            LinearGradient(stops: [
-                .init(color: .clear, location: 0.4),
-                .init(color: Theme.background.opacity(0.85), location: 0.72),
-                .init(color: Theme.background, location: 1),
-            ], startPoint: .top, endPoint: .bottom)
+            // Dissolve into the page at both ends: the top under the status bar, the bottom behind the text.
+            .mask(LinearGradient(stops: [
+                .init(color: .clear, location: 0),
+                .init(color: .black.opacity(0.85), location: 0.14),
+                .init(color: .black, location: 0.3),
+                .init(color: .black.opacity(0.9), location: 0.55),
+                .init(color: .black.opacity(0.35), location: 0.78),
+                .init(color: .clear, location: 1),
+            ], startPoint: .top, endPoint: .bottom))
 
             VStack(spacing: 12) {
                 if title.persianSubtitle { Badge(text: "زیرنویس فارسی", kind: .glass, icon: "captions.bubble.fill") }
@@ -223,5 +226,8 @@ private struct Hero: View {
             .padding(.bottom, Metrics.pagePad * 0.5)
         }
         .frame(height: Metrics.heroHeight)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.radius * 1.8, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.radius * 1.8, style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
+        .padding(.horizontal, Metrics.pagePad * 0.5)
     }
 }

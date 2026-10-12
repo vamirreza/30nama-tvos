@@ -9,6 +9,7 @@ struct TopShelfItem: Codable {
     let title: String
     let subtitle: String
     let imageURL: URL
+    var genre: String? = nil
 }
 
 enum TopShelfStore {

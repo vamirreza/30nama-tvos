@@ -10,6 +10,7 @@ final class ContentProvider: TVTopShelfContentProvider {
             let card = TVTopShelfCarouselItem(identifier: "\(item.id)")
             card.title = item.title
             card.summary = item.subtitle
+            card.genre = item.genre
             card.setImageURL(item.imageURL, for: .screenScale1x)
             card.setImageURL(item.imageURL, for: .screenScale2x)
             if let url = URL(string: "sinama://play/\(item.id)") {
@@ -18,6 +19,6 @@ final class ContentProvider: TVTopShelfContentProvider {
             }
             return card
         }
-        return TVTopShelfCarouselContent(style: .actions, items: cards)
+        return TVTopShelfCarouselContent(style: .details, items: cards)
     }
 }

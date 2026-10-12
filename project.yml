@@ -17,10 +17,6 @@ targets:
       - path: Resources/Fonts
       - path: Resources/tvOS
       - path: Resources/Shared
-    entitlements:
-      path: Config/SiNamaTV.entitlements
-      properties:
-        com.apple.security.application-groups: [group.com.vamirreza.sinama]
     dependencies:
       - target: SiNamaTopShelf
         embed: true
@@ -47,6 +43,9 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vamirreza.sinama.tv
+        # The app group needs a paid team on a real device; see Config/Base.xcconfig.
+        CODE_SIGN_ENTITLEMENTS: Config/SiNamaTV.entitlements
+        "CODE_SIGN_ENTITLEMENTS[sdk=appletvos*]": "$(TV_DEVICE_ENTITLEMENTS)"
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "3"
         MARKETING_VERSION: "0.1.0"
@@ -59,10 +58,6 @@ targets:
     sources:
       - path: TopShelf
       - path: Sources/Core/TopShelfStore.swift
-    entitlements:
-      path: Config/SiNamaTopShelf.entitlements
-      properties:
-        com.apple.security.application-groups: [group.com.vamirreza.sinama]
     info:
       path: Config/Info-TopShelf.plist
       properties:
@@ -73,6 +68,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vamirreza.sinama.tv.topshelf
+        CODE_SIGN_ENTITLEMENTS: Config/SiNamaTopShelf.entitlements
+        "CODE_SIGN_ENTITLEMENTS[sdk=appletvos*]": "$(SHELF_DEVICE_ENTITLEMENTS)"
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "3"
         MARKETING_VERSION: "0.1.0"

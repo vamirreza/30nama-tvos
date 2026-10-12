@@ -43,7 +43,7 @@ final class ContentProvider: TVTopShelfContentProvider {
         }
         guard let cover = UIImage(data: data) else { NSLog("[topshelf] not an image: \(item.id)"); return nil }
 
-        let format = UIGraphicsImageRendererFormat.default()
+        let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         let image = UIGraphicsImageRenderer(size: size, format: format).image { ctx in
             // Fill, anchored near the top so faces stay in frame.
@@ -74,9 +74,25 @@ final class ContentProvider: TVTopShelfContentProvider {
                 .foregroundColor: UIColor.white.withAlphaComponent(0.8),
                 .paragraphStyle: center,
             ]
+            // Measure first so the two lines are centred as a block, bottom-aligned just above the buttons.
+            let shadow = NSShadow()
+            shadow.shadowColor = UIColor.black.withAlphaComponent(0.7)
+            shadow.shadowBlurRadius = 12
+            shadow.shadowOffset = .zero
+            func block(_ text: String, _ attrs: [NSAttributedString.Key: Any]) -> (NSAttributedString, CGSize) {
+                var attrs = attrs
+                attrs[.shadow] = shadow
+                let string = NSAttributedString(string: text, attributes: attrs)
+                let box = string.boundingRect(with: CGSize(width: textWidth, height: 200), options: [.usesLineFragmentOrigin], context: nil)
+                return (string, CGSize(width: textWidth, height: ceil(box.height)))
+            }
+            let (titleText, titleSize) = block(item.title, titleAttrs(fontSize))
+            let (subText, subSize) = block(item.subtitle, subAttrs)
+            let gap: CGFloat = 10
+            let bottom: CGFloat = 535
             let left = (size.width - textWidth) / 2
-            (item.title as NSString).draw(in: CGRect(x: left, y: 395, width: textWidth, height: 95), withAttributes: titleAttrs(fontSize))
-            (item.subtitle as NSString).draw(in: CGRect(x: left, y: 490, width: textWidth, height: 50), withAttributes: subAttrs)
+            subText.draw(with: CGRect(x: left, y: bottom - subSize.height, width: textWidth, height: subSize.height), options: [.usesLineFragmentOrigin], context: nil)
+            titleText.draw(with: CGRect(x: left, y: bottom - subSize.height - gap - titleSize.height, width: textWidth, height: titleSize.height), options: [.usesLineFragmentOrigin], context: nil)
         }
 
         let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: TopShelfStore.group) ?? FileManager.default.temporaryDirectory

@@ -9,7 +9,8 @@ struct TopShelfItem: Codable {
     let title: String
     let subtitle: String
     let imageURL: URL
-    var genre: String? = nil
+    /// Name of the finished artwork in the shared Caches folder.
+    var file: String? = nil
 }
 
 enum TopShelfStore {

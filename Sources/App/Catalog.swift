@@ -59,7 +59,7 @@ enum Catalog {
     /// Codes the system's region list does not know.
     private static let oldCountries: [String: String] = [
         "XWG": "West Germany", "SUHH": "Soviet Union", "CSHH": "Czechoslovakia", "XYU": "Yugoslavia",
-        "DDDE": "East Germany", "HK": "Hong Kong", "PS": "Palestine",
+        "DDDE": "East Germany", "HK": "Hong Kong", "PS": "Palestine", "CN": "China",
     ]
 
     static func genre(_ fa: String) -> String { Lang.current == .en ? (genreByName[fa] ?? fa) : fa }

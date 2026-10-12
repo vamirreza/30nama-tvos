@@ -18,7 +18,8 @@ final class ContentProvider: TVTopShelfContentProvider {
         }
 
         let cards = items.compactMap { item -> TVTopShelfCarouselItem? in
-            guard let file = files[item.id] else { return nil }
+            // If the artwork could not be drawn, the plain cover still beats an empty shelf.
+            let file = files[item.id] ?? item.imageURL
             let card = TVTopShelfCarouselItem(identifier: "\(item.id)")
             card.setImageURL(file, for: .screenScale1x)
             card.setImageURL(file, for: .screenScale2x)
@@ -35,7 +36,12 @@ final class ContentProvider: TVTopShelfContentProvider {
     private static func render(_ item: TopShelfItem) async -> URL? {
         var request = URLRequest(url: item.imageURL)
         request.timeoutInterval = 8
-        guard let (data, _) = try? await URLSession.shared.data(for: request), let cover = UIImage(data: data) else { return nil }
+        let data: Data
+        do { data = try await URLSession.shared.data(for: request).0 } catch {
+            NSLog("[topshelf] download failed for \(item.id): \(error)")
+            return nil
+        }
+        guard let cover = UIImage(data: data) else { NSLog("[topshelf] not an image: \(item.id)"); return nil }
 
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = 1
@@ -69,7 +75,10 @@ final class ContentProvider: TVTopShelfContentProvider {
 
         let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: TopShelfStore.group) ?? FileManager.default.temporaryDirectory
         let file = dir.appendingPathComponent("shelf-\(item.id).jpg")
-        guard let jpeg = image.jpegData(compressionQuality: 0.85), (try? jpeg.write(to: file, options: .atomic)) != nil else { return nil }
+        do { try image.jpegData(compressionQuality: 0.85)?.write(to: file, options: .atomic) } catch {
+            NSLog("[topshelf] write failed for \(item.id): \(error)")
+            return nil
+        }
         return file
     }
 }

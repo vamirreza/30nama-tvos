@@ -37,6 +37,8 @@ enum Metrics {
     static let emptyIcon: CGFloat = 64
     static let launchLogo: CGFloat = 130
     static let dot: CGFloat = 10
+    static let progressBar: CGFloat = 8
+    static let progressInset: CGFloat = 18
     static let dotActive: CGFloat = 34
     static let heroDotsPad: CGFloat = 24
     static let heroPlotLines = 3
@@ -76,6 +78,8 @@ enum Metrics {
     static let emptyIcon: CGFloat = 40
     static let launchLogo: CGFloat = 56
     static let dot: CGFloat = 6
+    static let progressBar: CGFloat = 4
+    static let progressInset: CGFloat = 10
     static let dotActive: CGFloat = 16
     static let heroDotsPad: CGFloat = 8
     static let heroPlotLines = 2
@@ -143,7 +147,9 @@ private struct FloatOnFocus: ViewModifier {
         content
             .shadow(color: .black.opacity(focused ? 0.6 : 0), radius: focused ? 40 : 0, y: focused ? 32 : 0)
             .offset(y: focused ? -8 : 0)
-            .animation(.easeOut(duration: 0.22), value: focused)
+            .scaleEffect(focused ? 1.03 : 1)
+            // A little spring so the card settles into place instead of sliding.
+            .animation(.spring(response: 0.38, dampingFraction: 0.62), value: focused)
     }
 }
 

@@ -60,16 +60,23 @@ struct PosterCell: View {
             }
         }
         .frame(width: width, height: width * 1.5)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
-        .focusShape(cornerRadius: Theme.radius)
-        .floatOnFocus()
+        // The progress bar and badge sit on the artwork itself, so they are clipped to the rounded
+        // corners and move with the card when it lifts.
         .overlay(alignment: .bottom) {
             if title.progress > 0 {
-                ProgressView(value: min(1, title.progress / 100))
-                    .tint(Theme.red)
-                    .padding(.horizontal, 12).padding(.bottom, 12).padding(.top, 30)
-                    .background(LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom))
+                LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: width * 0.3)
+                .overlay(alignment: .bottom) {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(Color.white.opacity(0.3))
+                            Capsule().fill(Theme.red).frame(width: geo.size.width * min(1, title.progress / 100))
+                        }
+                    }
+                    .frame(height: Metrics.progressBar)
+                    .padding(.horizontal, Metrics.progressInset)
+                    .padding(.bottom, Metrics.progressInset)
+                }
             }
         }
         .overlay(alignment: .topLeading) {
@@ -81,6 +88,10 @@ struct PosterCell: View {
                     .padding(8)
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
+        .focusShape(cornerRadius: Theme.radius)
+        .floatOnFocus()
     }
 
     private var caption: some View {

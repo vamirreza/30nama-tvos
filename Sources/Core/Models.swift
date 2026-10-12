@@ -52,7 +52,7 @@ struct Title: Identifiable {
         local = j["title"]["local"].string
         plotLocal = j["plot"]["local"].string
         plotEnglish = j["plot"]["english"].string
-        genres = j["genre"].array.compactMap { $0["name"].string ?? $0.string }
+        genres = j["genre"].array.compactMap { $0["name"].string ?? $0.string }.map(Catalog.genre)
         func people(_ list: J) -> [Person] {
             list.array.compactMap { p in p["name"].string.map { Person(name: $0, imdb: p["imdb"].string) } }
         }
@@ -68,7 +68,7 @@ struct Title: Identifiable {
         nama30 = j["score"]["30nama"]["score"].double
         nextEpisodeCaption = j["air"]["next_episode_caption"].string
         nextEpisodeDate = j["air"]["next_episode_date"]["j"].string
-        episodeTitle = j["data"]["episode_title"].string
+        episodeTitle = j["data"]["episode_title"].string.map(ServerText.english)
         progress = j["data"]["progress"].double ?? 0
     }
 
@@ -121,7 +121,7 @@ struct MenuItem: Identifiable {
         guard let slug = j["slug"].string else { return nil }
         self.slug = slug
         id = j["id"].int ?? slug.hashValue
-        name = j["name"].string ?? slug
+        name = Catalog.menu(slug: slug, name: j["name"].string ?? slug)
         thumb = j["image"]["jpg"]["thumb"].url ?? j["image"]["webp"]["thumb"].url
     }
 }
@@ -186,7 +186,7 @@ struct StreamItem: Identifiable {
         season = j["info"]["season"].int
         episode = j["info"]["episode"].string
         episodeNumber = j["info"]["episode_number"].int
-        episodeName = j["info"]["episode_name"].string
+        episodeName = j["info"]["episode_name"].string.map(ServerText.english)
         sources = j["file"]["m3u8"].array.compactMap { s in
             s["default"].url.map { StreamSource(label: s["label"].string ?? "", url: $0) }
         }
@@ -226,7 +226,7 @@ struct StreamInfo {
                 fileId: fileId,
                 time: r["time"].double ?? 0,
                 season: r["season"].int,
-                episodeName: r["episode_name"].string
+                episodeName: r["episode_name"].string.map(ServerText.english)
             )
         } else {
             resume = nil
@@ -246,9 +246,9 @@ struct AppNotification: Identifiable {
     init?(_ j: J) {
         guard let id = j["id"].int else { return nil }
         self.id = id
-        title = j["title"].string ?? ""
-        text = Self.plain(j["text"].string ?? j["message"].string ?? j["content"].string ?? "")
-        date = j["date"].string ?? j["date"]["j"].string ?? j["date"]["g"].string ?? ""
+        title = ServerText.english(j["title"].string ?? "")
+        text = ServerText.english(Self.plain(j["text"].string ?? j["message"].string ?? j["content"].string ?? ""))
+        date = ServerText.date(j["date"].string ?? j["date"]["j"].string ?? j["date"]["g"].string ?? "")
         read = j["read"].bool ?? false
         postId = j["post_id"].int
     }
@@ -262,9 +262,16 @@ struct AppNotification: Identifiable {
 }
 
 struct Option: Identifiable {
+    enum Kind { case genre, type, country, rate }
     let name: String
     let value: String
     var id: String { value }
+
+    /// With a kind, the name is shown in English when the app is.
+    init(name: String, value: String, kind: Kind? = nil) {
+        self.name = kind.map { Catalog.option(kind: $0, value: value, name: name) } ?? name
+        self.value = value
+    }
 }
 
 struct AdvancedParameters {
@@ -274,16 +281,16 @@ struct AdvancedParameters {
     let country: [Option]
 
     init(_ j: J) {
-        func options(_ list: J) -> [Option] {
+        func options(_ list: J, _ kind: Option.Kind) -> [Option] {
             list.array.compactMap { o in
                 guard let name = o["name"].string, let value = o["value"].string else { return nil }
-                return Option(name: name, value: value)
+                return Option(name: name, value: value, kind: kind)
             }
         }
-        genre = options(j["genre"])
-        type = options(j["type"])
-        imdbRate = options(j["imdb_rate"])
-        country = options(j["country"])
+        genre = options(j["genre"], .genre)
+        type = options(j["type"], .type)
+        imdbRate = options(j["imdb_rate"], .rate)
+        country = options(j["country"], .country)
     }
 }
 

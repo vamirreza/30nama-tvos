@@ -23,7 +23,7 @@ targets:
     info:
       path: Config/Info.plist
       properties:
-        CFBundleDisplayName: "سی‌نما TV"
+        CFBundleDisplayName: "30nama"
         CFBundleURLTypes:
           - CFBundleURLName: com.vamirreza.sinama.tv
             CFBundleURLSchemes: [sinama]
@@ -59,7 +59,7 @@ targets:
     info:
       path: Config/Info-TopShelf.plist
       properties:
-        CFBundleDisplayName: "سی‌نما TV"
+        CFBundleDisplayName: "30nama"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.tv-top-shelf
           NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).ContentProvider"
@@ -83,7 +83,7 @@ targets:
     info:
       path: Config/Info-iOS.plist
       properties:
-        CFBundleDisplayName: "سی‌نما"
+        CFBundleDisplayName: "30nama"
         UILaunchScreen: {}
         UIUserInterfaceStyle: Dark
         # Filled in from Config/Secrets.xcconfig (git-ignored).

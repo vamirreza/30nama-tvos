@@ -5,7 +5,7 @@ import XCTest
 final class TourTests: XCTestCase {
     private let remote = XCUIRemote.shared
     private var shots: URL {
-        URL(fileURLWithPath: ProcessInfo.processInfo.environment["SHOT_DIR"] ?? "/private/tmp/claude-502/shots", isDirectory: true)
+        URL(fileURLWithPath: ProcessInfo.processInfo.environment["SHOT_DIR"] ?? NSTemporaryDirectory() + "sinama-shots", isDirectory: true)
     }
 
     override func setUp() {

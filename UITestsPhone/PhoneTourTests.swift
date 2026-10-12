@@ -4,7 +4,7 @@ import XCTest
 /// `testLoginSheet` needs a signed-out app; `testSignedInTour` needs a signed-in one.
 final class PhoneTourTests: XCTestCase {
     private var shots: URL {
-        URL(fileURLWithPath: ProcessInfo.processInfo.environment["SHOT_DIR"] ?? "/private/tmp/claude-502/phone-shots", isDirectory: true)
+        URL(fileURLWithPath: ProcessInfo.processInfo.environment["SHOT_DIR"] ?? NSTemporaryDirectory() + "sinama-phone-shots", isDirectory: true)
     }
 
     override func setUp() {

@@ -1,12 +1,4 @@
 // Shared build settings. Local values (client key, signing team) live in Secrets.xcconfig,
 // which is git-ignored; copy Secrets.example.xcconfig to create it.
 API_KEY =
-// The Top Shelf shares data with the app through an app group. That capability needs a paid
-// developer team on a real Apple TV, so it is off there by default (the Top Shelf then shows the
-// static image). With a paid team, set these two in Secrets.xcconfig:
-//   TV_DEVICE_ENTITLEMENTS = Config/SiNamaTV.entitlements
-//   SHELF_DEVICE_ENTITLEMENTS = Config/SiNamaTopShelf.entitlements
-// The simulator always uses them.
-TV_DEVICE_ENTITLEMENTS =
-SHELF_DEVICE_ENTITLEMENTS =
 #include? "Secrets.xcconfig"

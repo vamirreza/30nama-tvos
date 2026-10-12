@@ -66,16 +66,12 @@ button shows, the next episode starts by itself after 10 seconds of playback; ch
 
 `TopShelf/` is a Top Shelf extension: a carousel of the featured titles with the English title drawn
 on each card. The app saves the list when Home loads and the extension reads it through the app
-group `group.com.vamirreza.sinama`. App groups need a **paid** developer team on a real Apple TV, so
-they are off for devices by default (the static Top Shelf image shows instead). With a paid team add
-to `Config/Secrets.xcconfig`:
-
-```
-TV_DEVICE_ENTITLEMENTS = Config/SiNamaTV.entitlements
-SHELF_DEVICE_ENTITLEMENTS = Config/SiNamaTopShelf.entitlements
-```
-
-and change the group id (and bundle ids) to your own. The simulator always uses the group.
+group `group.com.vamirreza.sinama`. Without that group the extension has nothing to show, so on a
+real Apple TV the group must be registered for your team: Xcode does it automatically when you
+build with your team. Group ids are global, so if yours is taken, change it in
+`Config/SiNamaTV.entitlements`, `Config/SiNamaTopShelf.entitlements` and `TopShelfStore.group`
+(and the bundle ids in `project.yml`). Top Shelf content only appears while the app sits in the top
+row of the Apple TV home screen, and it can take a minute after the first launch.
 
 ## Differences from the webOS/Tizen app
 

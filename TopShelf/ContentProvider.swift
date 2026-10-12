@@ -1,4 +1,5 @@
 import TVServices
+import ImageIO
 import UIKit
 
 /// The Apple TV home-screen carousel: the featured titles the app last loaded.
@@ -12,13 +13,15 @@ final class ContentProvider: TVTopShelfContentProvider {
         guard !items.isEmpty else { return nil }
 
         // Artwork with the title drawn on it, so every card reads without relying on system text.
+        // One at a time and downsampled: a Top Shelf extension has a small memory budget, and twelve
+        // full-size covers decoded together are enough to get it killed.
         var files: [Int: URL] = [:]
-        await withTaskGroup(of: (Int, URL?).self) { group in
-            for item in items { group.addTask { (item.id, await Self.render(item)) } }
-            for await (id, url) in group { if let url { files[id] = url } }
+        for item in items.prefix(8) {
+            if let url = await Self.render(item) { files[item.id] = url }
+            TopShelfStore.trace("extension: drew \(files.count)")
         }
 
-        let cards = items.compactMap { item -> TVTopShelfCarouselItem? in
+        let cards = items.prefix(8).compactMap { item -> TVTopShelfCarouselItem? in
             // If the artwork could not be drawn, the plain cover still beats an empty shelf.
             let file = files[item.id] ?? item.imageURL
             let card = TVTopShelfCarouselItem(identifier: "\(item.id)")
@@ -35,6 +38,17 @@ final class ContentProvider: TVTopShelfContentProvider {
         return TVTopShelfCarouselContent(style: .actions, items: cards)
     }
 
+    private static func downsampled(_ data: Data, maxPixel: CGFloat) -> UIImage? {
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixel,
+        ]
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        return UIImage(cgImage: image)
+    }
+
     private static func render(_ item: TopShelfItem) async -> URL? {
         var request = URLRequest(url: item.imageURL)
         request.timeoutInterval = 8
@@ -43,10 +57,11 @@ final class ContentProvider: TVTopShelfContentProvider {
             NSLog("[topshelf] download failed for \(item.id): \(error)")
             return nil
         }
-        guard let cover = UIImage(data: data) else { NSLog("[topshelf] not an image: \(item.id)"); return nil }
+        guard let cover = downsampled(data, maxPixel: 1920) else { NSLog("[topshelf] not an image: \(item.id)"); return nil }
 
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
+        format.opaque = true
         let image = UIGraphicsImageRenderer(size: size, format: format).image { ctx in
             // Fill, anchored near the top so faces stay in frame.
             let scale = max(size.width / cover.size.width, size.height / cover.size.height)

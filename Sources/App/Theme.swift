@@ -75,10 +75,10 @@ struct PillButtonStyle: ButtonStyle {
     var prominent = false
 
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
-        Body(configuration: configuration, prominent: prominent)
+        StyledLabel(configuration: configuration, prominent: prominent)
     }
 
-    struct Body: View {
+    struct StyledLabel: View {
         let configuration: ButtonStyleConfiguration
         let prominent: Bool
         @Environment(\.isFocused) private var focused
@@ -111,10 +111,10 @@ struct ChipButtonStyle: ButtonStyle {
     var on = false
 
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
-        Body(configuration: configuration, on: on)
+        StyledLabel(configuration: configuration, on: on)
     }
 
-    struct Body: View {
+    struct StyledLabel: View {
         let configuration: ButtonStyleConfiguration
         let on: Bool
         @Environment(\.isFocused) private var focused
@@ -140,10 +140,10 @@ struct PosterButtonStyle: ButtonStyle {
     var radius: CGFloat = Theme.radius
 
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
-        Body(configuration: configuration, radius: radius)
+        StyledLabel(configuration: configuration, radius: radius)
     }
 
-    struct Body: View {
+    struct StyledLabel: View {
         let configuration: ButtonStyleConfiguration
         let radius: CGFloat
         @Environment(\.isFocused) private var focused

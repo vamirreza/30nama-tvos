@@ -9,16 +9,16 @@ struct MyListView: View {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .watchlist: return "لیست تماشا"
-            case .favorite: return "علاقه‌مندی‌ها"
-            case .continueWatching: return "ادامه تماشا"
+            case .watchlist: return tr("لیست تماشا")
+            case .favorite: return tr("علاقه‌مندی‌ها")
+            case .continueWatching: return tr("ادامه تماشا")
             }
         }
         var empty: String {
             switch self {
-            case .watchlist: return "لیست تماشا خالی است. در صفحه هر فیلم «+ لیست تماشا» را بزنید."
-            case .favorite: return "هنوز چیزی به علاقه‌مندی‌ها اضافه نکرده‌اید."
-            case .continueWatching: return "چیزی در حال تماشا نیست."
+            case .watchlist: return tr("لیست تماشا خالی است. در صفحه هر فیلم «+ لیست تماشا» را بزنید.")
+            case .favorite: return tr("هنوز چیزی به علاقه‌مندی‌ها اضافه نکرده‌اید.")
+            case .continueWatching: return tr("چیزی در حال تماشا نیست.")
             }
         }
     }
@@ -45,7 +45,7 @@ struct MyListView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
-                PageTitle(text: "لیست من")
+                PageTitle(text: tr("لیست من"))
                 ChoiceRow(options: Tab.allCases, selection: tab, label: { $0.label }) { tab = $0 }
                     .tvFocusSection()
 
@@ -63,9 +63,9 @@ struct MyListView: View {
             titleVisibility: .visible
         ) {
             if let t = picked {
-                Button { router.play(t.id) } label: { Label("ادامه پخش", systemImage: "play.fill") }
-                Button("جزئیات") { detail = t.id }
-                Button("حذف از ادامه تماشا", role: .destructive) {
+                Button { router.play(t.id) } label: { Label(tr("ادامه پخش"), systemImage: "play.fill") }
+                Button(tr("جزئیات")) { detail = t.id }
+                Button(tr("حذف از ادامه تماشا"), role: .destructive) {
                     Task {
                         try? await API.dismissContinue(t.id)
                         reload += 1
@@ -87,9 +87,9 @@ struct NotificationsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.itemSpacing) {
-                PageTitle(text: "اعلان‌ها").padding(.bottom, Metrics.itemSpacing)
+                PageTitle(text: tr("اعلان‌ها")).padding(.bottom, Metrics.itemSpacing)
                 if let error { Text(error).foregroundStyle(Theme.red) }
-                if loaded && items.isEmpty { EmptyState(icon: "bell.slash", text: "اعلان تازه‌ای ندارید.") }
+                if loaded && items.isEmpty { EmptyState(icon: "bell.slash", text: tr("اعلان تازه‌ای ندارید.")) }
                 if !loaded && error == nil { ProgressView().tint(.white).frame(maxWidth: .infinity).padding(60) }
                 ForEach(items) { n in
                     Button { open(n) } label: {
@@ -151,35 +151,36 @@ struct ProfileView: View {
     @EnvironmentObject private var settings: SettingsStore
     @State private var confirmLogout = false
 
-    private let plans = ["golden": "طلایی", "silver": "نقره‌ای", "bronze": "برنزی", "free": "رایگان"]
+    private let plans = ["golden": tr("طلایی"), "silver": tr("نقره‌ای"), "bronze": tr("برنزی"), "free": tr("رایگان")]
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.sectionGap) {
-                PageTitle(text: "حساب و تنظیمات")
+                PageTitle(text: tr("حساب و تنظیمات"))
                 if let u = app.user { account(u) }
 
-                setting("زیرنویس پیش‌فرض", icon: "captions.bubble", options: SubLang.allCases, selection: settings.subLang, label: { $0.label }) { settings.subLang = $0 }
-                setting("اندازه زیرنویس", icon: "textformat.size", options: SubSize.allCases, selection: settings.subSize, label: { $0.label }) { settings.subSize = $0 }
-                setting("صدا", icon: "speaker.wave.2", options: AudioPref.allCases, selection: settings.audio, label: { $0.label }) { settings.audio = $0 }
-                setting("کیفیت تصویر", icon: "sparkles.tv", options: Quality.allCases, selection: settings.quality, label: { $0.label }) { settings.quality = $0 }
+                setting(tr("زبان"), icon: "globe", options: AppLanguage.allCases, selection: settings.language, label: { $0.label }) { settings.language = $0 }
+                setting(tr("زیرنویس پیش‌فرض"), icon: "captions.bubble", options: SubLang.allCases, selection: settings.subLang, label: { $0.label }) { settings.subLang = $0 }
+                setting(tr("اندازه زیرنویس"), icon: "textformat.size", options: SubSize.allCases, selection: settings.subSize, label: { $0.label }) { settings.subSize = $0 }
+                setting(tr("صدا"), icon: "speaker.wave.2", options: AudioPref.allCases, selection: settings.audio, label: { $0.label }) { settings.audio = $0 }
+                setting(tr("کیفیت تصویر"), icon: "sparkles.tv", options: Quality.allCases, selection: settings.quality, label: { $0.label }) { settings.quality = $0 }
 
                 #if os(iOS)
                 NavigationLink(value: Route.notifications) {
-                    Label("اعلان‌ها", systemImage: "bell").frame(maxWidth: .infinity)
+                    Label(tr("اعلان‌ها"), systemImage: "bell").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.pill)
                 #endif
 
                 HStack {
-                    Button { confirmLogout = true } label: { Label("خروج از حساب", systemImage: "rectangle.portrait.and.arrow.right") }
+                    Button { confirmLogout = true } label: { Label(tr("خروج از حساب"), systemImage: "rectangle.portrait.and.arrow.right") }
                         .buttonStyle(.pill)
                     Spacer()
                 }
 
                 VStack(spacing: 10) {
                     Logo(height: Metrics.launchLogo * 0.6).opacity(0.7)
-                    Text("برنامهٔ غیررسمی سی‌نما").font(.appCaption).foregroundStyle(Theme.textDim)
+                    Text(tr("برنامهٔ غیررسمی سی‌نما")).font(.appCaption).foregroundStyle(Theme.textDim)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.top, Metrics.sectionGap)
@@ -188,9 +189,9 @@ struct ProfileView: View {
             .padding(.vertical, Metrics.pageVPad)
         }
         .appBackground()
-        .confirmationDialog("از حساب سی‌نما در این دستگاه خارج شوید؟", isPresented: $confirmLogout, titleVisibility: .visible) {
-            Button("خروج", role: .destructive) { Task { await app.logout() } }
-            Button("انصراف", role: .cancel) {}
+        .confirmationDialog(tr("از حساب سی‌نما در این دستگاه خارج شوید؟"), isPresented: $confirmLogout, titleVisibility: .visible) {
+            Button(tr("خروج"), role: .destructive) { Task { await app.logout() } }
+            Button(tr("انصراف"), role: .cancel) {}
         }
     }
 
@@ -210,11 +211,11 @@ struct ProfileView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(u.name).font(.appTitle2)
                     HStack(spacing: 12) {
-                        Badge(text: "اشتراک \(plans[u.type] ?? u.type)", kind: .solid, icon: "crown.fill")
-                        if let d = u.daysLeft { Badge(text: "\(d) روز باقی‌مانده", kind: .glass) }
-                        if let e = u.expiresOn { Badge(text: "تا \(e)", kind: .glass) }
+                        Badge(text: tr("اشتراک %@", plans[u.type] ?? u.type), kind: .solid, icon: "crown.fill")
+                        if let d = u.daysLeft { Badge(text: tr("%d روز باقی‌مانده", d), kind: .glass) }
+                        if let e = u.expiresOn { Badge(text: tr("تا %@", e), kind: .glass) }
                     }
-                    if !u.allowedToStream { Text("پخش آنلاین برای این حساب فعال نیست").font(.appCallout).foregroundStyle(Theme.red) }
+                    if !u.allowedToStream { Text(tr("پخش آنلاین برای این حساب فعال نیست")).font(.appCallout).foregroundStyle(Theme.red) }
                 }
             }
         }

@@ -10,12 +10,14 @@ struct SiNamaTVApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                // A new identity rebuilds every screen, so all strings pick up the new language.
+                .id(settings.language)
                 .environmentObject(app)
                 .environmentObject(router)
                 .environmentObject(settings)
-                // The interface is Persian and right-to-left.
-                .environment(\.layoutDirection, .rightToLeft)
-                .environment(\.locale, Locale(identifier: "fa"))
+                // Persian is right-to-left, English left-to-right.
+                .environment(\.layoutDirection, settings.language.layoutDirection)
+                .environment(\.locale, settings.language.locale)
                 .preferredColorScheme(.dark)
                 .font(.appBody)
                 .tint(Theme.red)
@@ -62,16 +64,19 @@ struct MainTabs: View {
         #endif
     }
 
+    // Kept in the router so a language switch (which rebuilds the UI) leaves you on the same tab.
+    @EnvironmentObject private var router: Router
+
     var body: some View {
-        TabView {
-            Nav { HomeView() }.tabItem { Label("خانه", systemImage: "house") }
-            Nav { SearchView() }.tabItem { Label("جستجو", systemImage: "magnifyingglass") }
-            Nav { BrowseView() }.tabItem { Label("دسته‌بندی", systemImage: "square.grid.2x2") }
-            Nav { MyListView() }.tabItem { Label("لیست من", systemImage: "bookmark") }
+        TabView(selection: $router.tab) {
+            Nav { HomeView() }.tabItem { Label(tr("خانه"), systemImage: "house") }.tag(0)
+            Nav { SearchView() }.tabItem { Label(tr("جستجو"), systemImage: "magnifyingglass") }.tag(1)
+            Nav { BrowseView() }.tabItem { Label(tr("دسته‌بندی"), systemImage: "square.grid.2x2") }.tag(2)
+            Nav { MyListView() }.tabItem { Label(tr("لیست من"), systemImage: "bookmark") }.tag(3)
             #if os(tvOS)
-            Nav { NotificationsView() }.tabItem { Label("اعلان‌ها", systemImage: "bell") }
+            Nav { NotificationsView() }.tabItem { Label(tr("اعلان‌ها"), systemImage: "bell") }.tag(4)
             #endif
-            Nav { ProfileView() }.tabItem { Label("حساب", systemImage: "person.crop.circle") }
+            Nav { ProfileView() }.tabItem { Label(tr("حساب"), systemImage: "person.crop.circle") }.tag(5)
         }
     }
 }

@@ -66,7 +66,7 @@ final class PlayerEngine {
         playerVC.allowsPictureInPicturePlayback = true
         #endif
         setupOverlay()
-        showStatus("در حال بارگذاری…")
+        showStatus(tr("در حال بارگذاری…"))
 
         timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.5, preferredTimescale: 600), queue: .main) { [weak self] time in
             let seconds = time.seconds
@@ -103,7 +103,7 @@ final class PlayerEngine {
             resume = s.resume
             titleName = s.name
             guard !items.isEmpty else {
-                failAndClose("فایلی برای پخش پیدا نشد")
+                failAndClose(tr("فایلی برای پخش پیدا نشد"))
                 return
             }
             // No explicit file means "resume": the stream's saved episode, else the first file.
@@ -111,7 +111,7 @@ final class PlayerEngine {
             let i = target.flatMap { t in items.firstIndex { $0.fileId == t } } ?? 0
             play(index: i)
         } catch {
-            if let m = describe(error) { failAndClose("خطای پخش: \(m)") }
+            if let m = describe(error) { failAndClose(tr("خطای پخش: %@", m)) }
         }
     }
 
@@ -124,7 +124,7 @@ final class PlayerEngine {
 
         index = i
         guard let source = item.sources.first else {
-            showStatus("لینک پخش پیدا نشد")
+            showStatus(tr("لینک پخش پیدا نشد"))
             return
         }
         hideStatus()
@@ -236,18 +236,18 @@ final class PlayerEngine {
 
     private func setContextual(_ state: Contextual) {
         contextual = state
-        let next = UIAction(title: "قسمت بعد", image: UIImage(systemName: "forward.end.fill")) { [weak self] _ in self?.playNext() }
+        let next = UIAction(title: tr("قسمت بعد"), image: UIImage(systemName: "forward.end.fill")) { [weak self] _ in self?.playNext() }
         switch state {
         case .none:
             setActions([])
         case .intro:
             setActions([
-                UIAction(title: "رد کردن تیتراژ", image: UIImage(systemName: "forward.fill")) { [weak self] _ in self?.skipIntro() },
+                UIAction(title: tr("رد کردن تیتراژ"), image: UIImage(systemName: "forward.fill")) { [weak self] _ in self?.skipIntro() },
             ])
         case .nextAuto:
             setActions([
                 next,
-                UIAction(title: "ماندن") { [weak self] _ in self?.autoNext = false },
+                UIAction(title: tr("ماندن")) { [weak self] _ in self?.autoNext = false },
             ])
         case .nextManual:
             setActions([next])
@@ -325,24 +325,24 @@ final class PlayerEngine {
             let actions: [UIAction] = items.enumerated()
                 .filter { ($0.element.season ?? 1) == season }
                 .map { offset, e in
-                    let label = "قسمت \(e.episodeLabel)" + ((e.episodeName?.isEmpty == false) ? " — \(e.episodeName ?? "")" : "")
+                    let label = tr("قسمت %@", e.episodeLabel) + ((e.episodeName?.isEmpty == false) ? " — \(e.episodeName ?? "")" : "")
                     return UIAction(title: label, state: offset == index ? .on : .off) { [weak self] _ in
                         guard let self, offset != self.index else { return }
                         self.play(index: offset)
                     }
                 }
-            menus.append(UIMenu(title: "قسمت‌ها", image: UIImage(systemName: "list.bullet"), children: actions))
+            menus.append(UIMenu(title: tr("قسمت‌ها"), image: UIImage(systemName: "list.bullet"), children: actions))
         }
 
         let subs: [UIAction] = SubLang.allCases.map { l in
             UIAction(title: l.label, state: l == subLang ? .on : .off) { [weak self] _ in self?.setSubLang(l) }
         }
-        menus.append(UIMenu(title: "زیرنویس", image: UIImage(systemName: "captions.bubble"), children: subs))
+        menus.append(UIMenu(title: tr("زیرنویس"), image: UIImage(systemName: "captions.bubble"), children: subs))
 
         let qualities: [UIAction] = Quality.allCases.map { q in
             UIAction(title: q.label, state: q == quality ? .on : .off) { [weak self] _ in self?.setQuality(q) }
         }
-        menus.append(UIMenu(title: "کیفیت", image: UIImage(systemName: "slider.horizontal.3"), children: qualities))
+        menus.append(UIMenu(title: tr("کیفیت"), image: UIImage(systemName: "slider.horizontal.3"), children: qualities))
 
         setMenus(menus)
     }

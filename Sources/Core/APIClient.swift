@@ -45,7 +45,7 @@ enum Client {
 
     static func call(_ action: String, _ form: [String: Any?] = [:], retries: Int = 2) async throws -> Envelope {
         guard let url = URL(string: Config.apiBase + action) else {
-            throw APIError(kind: .network, message: "نشانی نامعتبر")
+            throw APIError(kind: .network, message: tr("نشانی نامعتبر"))
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -68,13 +68,13 @@ enum Client {
                 }
                 // Cloudflare answers blocked clients with an HTML challenge page instead of JSON.
                 if text.trimmed.hasPrefix("<") {
-                    throw APIError(kind: .challenge, message: "سرور سی‌نما درخواست را مسدود کرد", status: http)
+                    throw APIError(kind: .challenge, message: tr("سرور سی‌نما درخواست را مسدود کرد"), status: http)
                 }
                 guard let obj = try? JSONSerialization.jsonObject(with: data) else { throw URLError(.cannotParseResponse) }
                 let j = J(obj)
                 let status = j["status"].int ?? http
                 if status == 401 || status == 403 || http == 401 {
-                    throw APIError(kind: .unauthorized, message: j["msg"].string ?? "دسترسی ندارید", status: status)
+                    throw APIError(kind: .unauthorized, message: j["msg"].string ?? tr("دسترسی ندارید"), status: status)
                 }
                 return Envelope(status: status, success: j["success"].bool ?? false, msg: j["msg"].string, result: j["result"])
             } catch let e as APIError {
@@ -85,13 +85,13 @@ enum Client {
                 if attempt < retries { try? await Task.sleep(nanoseconds: UInt64(1_500_000_000 * (attempt + 1))) }
             }
         }
-        throw APIError(kind: .network, message: lastError?.localizedDescription ?? "اتصال برقرار نشد")
+        throw APIError(kind: .network, message: lastError?.localizedDescription ?? tr("اتصال برقرار نشد"))
     }
 
     /// Most screens only want the result and treat success:false as an error.
     static func result(_ action: String, _ form: [String: Any?] = [:]) async throws -> J {
         let env = try await call(action, form)
-        if !env.success { throw APIError(kind: .rejected, message: env.msg ?? "خطای ناشناخته", status: env.status) }
+        if !env.success { throw APIError(kind: .rejected, message: env.msg ?? tr("خطای ناشناخته"), status: env.status) }
         return env.result
     }
 }

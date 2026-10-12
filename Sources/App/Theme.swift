@@ -55,7 +55,7 @@ struct Logo: View {
     var height: CGFloat = Theme.logoHeight
     var body: some View {
         Image("Logo").resizable().scaledToFit().frame(height: height)
-            .accessibilityLabel("سی‌نما")
+            .accessibilityLabel(tr("سی‌نما"))
     }
 }
 
@@ -221,11 +221,11 @@ struct MetaBadges: View {
             if let y = title.year {
                 Text("\(y)" + (title.yearEnd.map { "–\($0)" } ?? "")).font(.appCalloutMedium).foregroundStyle(Theme.textDim)
             }
-            if let m = title.minutes { Text("\(m) دقیقه").font(.appCalloutMedium).foregroundStyle(Theme.textDim) }
+            if let m = title.minutes { Text(tr("%d دقیقه", m)).font(.appCalloutMedium).foregroundStyle(Theme.textDim) }
             if let age = title.age, !age.isEmpty { Badge(text: age, kind: .outline) }
             if let s = title.imdb { Badge(text: "IMDb \(s)", kind: .imdb) }
-            if let s = title.nama30 { Badge(text: "سی‌نما \(s)", kind: .solid) }
-            if title.persianSubtitle { Badge(text: "زیرنویس فارسی", kind: .glass, icon: "captions.bubble.fill") }
+            if let s = title.nama30 { Badge(text: tr("سی‌نما %@", "\(s)"), kind: .solid) }
+            if title.persianSubtitle { Badge(text: tr("زیرنویس فارسی"), kind: .glass, icon: "captions.bubble.fill") }
         }
     }
 

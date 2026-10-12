@@ -194,7 +194,7 @@ struct PagedGrid: View {
     private let onSelect: ((Title) -> Void)?
     private let columns = [GridItem(.adaptive(minimum: Metrics.gridMin, maximum: Metrics.gridMax), spacing: Metrics.gridGap)]
 
-    init(empty: String = "چیزی پیدا نشد", onSelect: ((Title) -> Void)? = nil, fetch: @escaping (Int) async throws -> Page) {
+    init(empty: String = tr("چیزی پیدا نشد"), onSelect: ((Title) -> Void)? = nil, fetch: @escaping (Int) async throws -> Page) {
         _loader = StateObject(wrappedValue: PagedLoader(fetch: fetch))
         self.empty = empty
         self.onSelect = onSelect
@@ -265,7 +265,7 @@ struct ErrorNote: View {
         VStack(spacing: 24) {
             Image(systemName: "exclamationmark.triangle.fill").font(.system(size: Metrics.emptyIcon)).foregroundStyle(Theme.red)
             Text(message).font(.appBody).multilineTextAlignment(.center)
-            if let retry { Button("تلاش دوباره", action: retry).buttonStyle(.pillProminent) }
+            if let retry { Button(tr("تلاش دوباره"), action: retry).buttonStyle(.pillProminent) }
         }
         .frame(maxWidth: .infinity)
         .padding(Metrics.pagePad)

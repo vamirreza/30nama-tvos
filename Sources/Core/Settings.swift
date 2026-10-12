@@ -4,9 +4,9 @@ enum SubLang: String, CaseIterable {
     case fa, en, off
     var label: String {
         switch self {
-        case .fa: return "فارسی"
-        case .en: return "انگلیسی"
-        case .off: return "خاموش"
+        case .fa: return tr("فارسی")
+        case .en: return tr("انگلیسی")
+        case .off: return tr("خاموش")
         }
     }
 }
@@ -15,9 +15,9 @@ enum SubSize: String, CaseIterable {
     case s, m, l
     var label: String {
         switch self {
-        case .s: return "کوچک"
-        case .m: return "متوسط"
-        case .l: return "بزرگ"
+        case .s: return tr("کوچک")
+        case .m: return tr("متوسط")
+        case .l: return tr("بزرگ")
         }
     }
     var pointSize: CGFloat {
@@ -40,13 +40,13 @@ enum SubSize: String, CaseIterable {
 enum AudioPref: String, CaseIterable {
     case stereo = "2"
     case surround = "6"
-    var label: String { self == .stereo ? "استریو (۲ کاناله)" : "فراگیر ۵.۱ (۶ کاناله)" }
+    var label: String { self == .stereo ? tr("استریو (۲ کاناله)") : tr("فراگیر ۵.۱ (۶ کاناله)") }
 }
 
 /// Highest video height to play at; 0 = automatic.
 enum Quality: Int, CaseIterable {
     case auto = 0, p1080 = 1080, p720 = 720, p480 = 480
-    var label: String { self == .auto ? "خودکار" : "\(rawValue)p" }
+    var label: String { self == .auto ? tr("خودکار") : "\(rawValue)p" }
 }
 
 /// Viewer preferences, kept on the device in UserDefaults.
@@ -54,12 +54,18 @@ enum Quality: Int, CaseIterable {
 final class SettingsStore: ObservableObject {
     private let d = UserDefaults.standard
 
+    @Published var language: AppLanguage {
+        didSet { d.set(language.rawValue, forKey: "30nama.language"); Lang.current = language }
+    }
     @Published var subLang: SubLang { didSet { d.set(subLang.rawValue, forKey: "30nama.subLang") } }
     @Published var subSize: SubSize { didSet { d.set(subSize.rawValue, forKey: "30nama.subSize") } }
     @Published var audio: AudioPref { didSet { d.set(audio.rawValue, forKey: "30nama.audio") } }
     @Published var quality: Quality { didSet { d.set(quality.rawValue, forKey: "30nama.quality") } }
 
     init() {
+        let lang = AppLanguage(rawValue: d.string(forKey: "30nama.language") ?? "") ?? .deviceDefault
+        Lang.current = lang
+        language = lang
         subLang = SubLang(rawValue: d.string(forKey: "30nama.subLang") ?? "") ?? .fa
         subSize = SubSize(rawValue: d.string(forKey: "30nama.subSize") ?? "") ?? .m
         audio = AudioPref(rawValue: d.string(forKey: "30nama.audio") ?? "") ?? .stereo

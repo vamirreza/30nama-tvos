@@ -126,7 +126,7 @@ struct TitleView: View {
 
     private func watchlistButton(wide: Bool) -> some View {
         Button { toggle("watchlist") } label: {
-            Label(lists.contains("watchlist", id) ? "در لیست تماشا" : "لیست تماشا", systemImage: lists.contains("watchlist", id) ? "checkmark" : "plus")
+            Label(lists.contains("watchlist", id) ? tr("در لیست تماشا") : tr("لیست تماشا"), systemImage: lists.contains("watchlist", id) ? "checkmark" : "plus")
                 .lineLimit(1)
                 .frame(maxWidth: wide ? CGFloat.infinity : nil)
         }
@@ -135,7 +135,7 @@ struct TitleView: View {
 
     private func favoriteButton(wide: Bool) -> some View {
         Button { toggle("favorite") } label: {
-            Label("علاقه‌مندی", systemImage: lists.contains("favorite", id) ? "heart.fill" : "heart")
+            Label(tr("علاقه‌مندی"), systemImage: lists.contains("favorite", id) ? "heart.fill" : "heart")
                 .lineLimit(1)
                 .frame(maxWidth: wide ? CGFloat.infinity : nil)
         }
@@ -201,19 +201,19 @@ struct TitleView: View {
         if t.canStream {
             if let r = stream?.resume, r.time > 0 {
                 Button { router.play(id, fileId: r.fileId) } label: {
-                    Label("ادامه \(r.episodeName ?? "")", systemImage: "play.fill").frame(maxWidth: width)
+                    Label(tr("ادامه %@", r.episodeName ?? ""), systemImage: "play.fill").frame(maxWidth: width)
                 }
                 .buttonStyle(.pillProminent)
                 .focused($playFocused)
             } else {
                 Button { router.play(id) } label: {
-                    Label("پخش", systemImage: "play.fill").frame(maxWidth: width)
+                    Label(tr("پخش"), systemImage: "play.fill").frame(maxWidth: width)
                 }
                 .buttonStyle(.pillProminent)
                 .focused($playFocused)
             }
         } else {
-            Button(t.comingSoon ? "به‌زودی" : "پخش آنلاین ندارد") {}
+            Button(t.comingSoon ? tr("به‌زودی") : tr("پخش آنلاین ندارد")) {}
                 .buttonStyle(.pill)
                 .disabled(true)
         }
@@ -221,11 +221,11 @@ struct TitleView: View {
 
     private func people(_ t: Title) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionHeader(title: "بازیگران و سازندگان")
+            SectionHeader(title: tr("بازیگران و سازندگان"))
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: Metrics.itemSpacing) {
                     ForEach(Array(t.directors.prefix(2).enumerated()), id: \.offset) { _, p in
-                        personLink(p, role: "director", label: "کارگردان: \(p.name)", icon: "megaphone.fill")
+                        personLink(p, role: "director", label: tr("کارگردان: %@", p.name), icon: "megaphone.fill")
                     }
                     ForEach(Array(t.cast.prefix(5).enumerated()), id: \.offset) { _, p in
                         personLink(p, role: "actor", label: p.name, icon: "person.fill")
@@ -268,11 +268,11 @@ struct TitleView: View {
 
     private var episodes: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionHeader(title: "قسمت‌ها")
+            SectionHeader(title: tr("قسمت‌ها"))
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: Metrics.itemSpacing) {
                     ForEach(seasonKeys, id: \.self) { s in
-                        ChipButton(label: "فصل \(s)", on: s == currentSeason) { season = s }
+                        ChipButton(label: tr("فصل %@", "\(s)"), on: s == currentSeason) { season = s }
                     }
                 }
                 .padding(.vertical, 12)

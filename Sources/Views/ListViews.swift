@@ -22,7 +22,7 @@ struct ListView: View {
     }
 
     private var kicker: String? {
-        if case .person(let role, _, _) = route.source { return role == "actor" ? "آثار بازیگر" : "آثار کارگردان" }
+        if case .person(let role, _, _) = route.source { return role == "actor" ? tr("آثار بازیگر") : tr("آثار کارگردان") }
         return nil
     }
 
@@ -36,8 +36,8 @@ struct ListView: View {
                     }
                     Spacer()
                     HStack(spacing: 20) {
-                        ChipButton(label: "مرتبط‌ترین", on: order == .relevant) { order = .relevant }
-                        ChipButton(label: "جدیدترین", on: order == .year) { order = .year }
+                        ChipButton(label: tr("مرتبط‌ترین"), on: order == .relevant) { order = .relevant }
+                        ChipButton(label: tr("جدیدترین"), on: order == .year) { order = .year }
                     }
                 }
                 .tvFocusSection()
@@ -63,16 +63,16 @@ struct SearchView: View {
         ScrollView {
             VStack(spacing: 30) {
                 if query.count >= minChars {
-                    PagedGrid(empty: "نتیجه‌ای برای «\(query)» پیدا نشد") { page in try await API.search(query, page: page) }
+                    PagedGrid(empty: tr("نتیجه‌ای برای «%@» پیدا نشد", query)) { page in try await API.search(query, page: page) }
                         .id(query)
                 } else {
-                    EmptyState(icon: "magnifyingglass", text: "دست‌کم سه حرف بنویسید.")
+                    EmptyState(icon: "magnifyingglass", text: tr("دست‌کم سه حرف بنویسید."))
                 }
             }
             .padding(.horizontal, Metrics.pagePad)
         }
         .appBackground()
-        .searchable(text: $text, prompt: "نام فیلم، سریال یا انیمه")
+        .searchable(text: $text, prompt: tr("نام فیلم، سریال یا انیمه"))
         .task(id: text) {
             try? await Task.sleep(nanoseconds: 450_000_000)
             if !Task.isCancelled { query = text.trimmed }
@@ -92,15 +92,15 @@ struct BrowseView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack {
-                    PageTitle(text: "دسته‌بندی‌ها")
+                    PageTitle(text: tr("دسته‌بندی‌ها"))
                     Spacer()
-                    NavigationLink(value: Route.filters) { Label("جستجوی پیشرفته", systemImage: "slider.horizontal.3") }
+                    NavigationLink(value: Route.filters) { Label(tr("جستجوی پیشرفته"), systemImage: "slider.horizontal.3") }
                         .buttonStyle(.pillProminent)
                 }
                 .tvFocusSection()
                 if let m = menu {
-                    tiles("نوع", m.categories.filter { !hidden.contains($0.slug) })
-                    tiles("ژانر", m.genres)
+                    tiles(tr("نوع"), m.categories.filter { !hidden.contains($0.slug) })
+                    tiles(tr("ژانر"), m.genres)
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {
@@ -156,11 +156,11 @@ struct BrowseView: View {
 struct FiltersView: View {
     private struct Decade { let label: String; let min: Int; let max: Int }
     private let decades = [
-        Decade(label: "دهه ۲۰۲۰", min: 2020, max: 2029),
-        Decade(label: "دهه ۲۰۱۰", min: 2010, max: 2019),
-        Decade(label: "دهه ۲۰۰۰", min: 2000, max: 2009),
-        Decade(label: "دهه ۱۹۹۰", min: 1990, max: 1999),
-        Decade(label: "قدیمی‌تر", min: 1890, max: 1989),
+        Decade(label: tr("دهه ۲۰۲۰"), min: 2020, max: 2029),
+        Decade(label: tr("دهه ۲۰۱۰"), min: 2010, max: 2019),
+        Decade(label: tr("دهه ۲۰۰۰"), min: 2000, max: 2009),
+        Decade(label: tr("دهه ۱۹۹۰"), min: 1990, max: 1999),
+        Decade(label: tr("قدیمی‌تر"), min: 1890, max: 1989),
     ]
     // The parameter list is long (87 countries); the TV shows the most useful slice of each.
     private let countryCount = 16
@@ -187,19 +187,19 @@ struct FiltersView: View {
         }
         let json = (try? JSONSerialization.data(withJSONObject: p, options: [.sortedKeys]))
             .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-        return .list(ListRoute(title: "نتایج جستجوی پیشرفته", source: .filter(json: json)))
+        return .list(ListRoute(title: tr("نتایج جستجوی پیشرفته"), source: .filter(json: json)))
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.sectionGap) {
                 HStack {
-                    PageTitle(text: "جستجوی پیشرفته")
+                    PageTitle(text: tr("جستجوی پیشرفته"))
                     Spacer()
                     HStack(spacing: 20) {
-                        NavigationLink(value: resultsRoute) { Label("نمایش نتایج", systemImage: "magnifyingglass") }
+                        NavigationLink(value: resultsRoute) { Label(tr("نمایش نتایج"), systemImage: "magnifyingglass") }
                             .buttonStyle(.pillProminent)
-                        Button("پاک کردن") {
+                        Button(tr("پاک کردن")) {
                             types = []; genres = []; countries = []; rate = nil; decade = nil
                         }
                         .buttonStyle(.pill)
@@ -207,13 +207,13 @@ struct FiltersView: View {
                 }
                 .tvFocusSection()
                 if let p = params {
-                    group("نوع", p.type, selected: { types.contains($0) }) { toggle(&types, $0) }
-                    group("ژانر", p.genre, selected: { genres.contains($0) }) { toggle(&genres, $0) }
-                    group("امتیاز IMDb", Array(p.imdbRate.prefix(rateCount)), selected: { rate == $0 }) { rate = rate == $0 ? nil : $0 }
-                    group("سال ساخت", decades.map { Option(name: $0.label, value: "\($0.min)") }, selected: { decade == Int($0) }) {
+                    group(tr("نوع"), p.type, selected: { types.contains($0) }) { toggle(&types, $0) }
+                    group(tr("ژانر"), p.genre, selected: { genres.contains($0) }) { toggle(&genres, $0) }
+                    group(tr("امتیاز IMDb"), Array(p.imdbRate.prefix(rateCount)), selected: { rate == $0 }) { rate = rate == $0 ? nil : $0 }
+                    group(tr("سال ساخت"), decades.map { Option(name: $0.label, value: "\($0.min)") }, selected: { decade == Int($0) }) {
                         decade = decade == Int($0) ? nil : Int($0)
                     }
-                    group("کشور", Array(p.country.prefix(countryCount)), selected: { countries.contains($0) }) { toggle(&countries, $0) }
+                    group(tr("کشور"), Array(p.country.prefix(countryCount)), selected: { countries.contains($0) }) { toggle(&countries, $0) }
                 } else if let error {
                     ErrorNote(message: error) { Task { await load() } }
                 } else {

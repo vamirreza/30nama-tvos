@@ -25,6 +25,7 @@ final class TourTests: XCTestCase {
 
     func testTour() {
         let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "fa"]
         app.launch()
         shot("01-home", wait: 6)
 
@@ -59,6 +60,7 @@ final class TourTests: XCTestCase {
 
     func testTitleAndPlayer() {
         let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "fa"]
         app.launch()
         shot("10-home", wait: 6)
         // Down from the tab bar lands on the hero's Play button; Details is one step toward the left.
@@ -79,6 +81,7 @@ final class TourTests: XCTestCase {
     /// Plays the first Continue Watching title, which is known to stream for this account.
     func testContinueWatching() {
         let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "fa"]
         app.launch()
         shot("20-home", wait: 6)
         press(.down, 2)          // hero actions, then the first row (rightmost poster in RTL)
@@ -97,6 +100,7 @@ final class TourTests: XCTestCase {
     /// Plays a resumable title, samples frames for subtitles, then walks the transport-bar menus.
     func testPlayerFeatures() {
         let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "fa"]
         app.launch()
         shot("30-home", wait: 6)
         press(.down, 2)
@@ -123,6 +127,7 @@ final class TourTests: XCTestCase {
     /// Starts the first Continue Watching title and leaves it alone, so playback state can be inspected.
     func testPlayUntouched() {
         let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "fa"]
         app.launch()
         shot("40-home", wait: 6)
         press(.down, 2)

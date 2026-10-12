@@ -6,7 +6,7 @@ enum API {
     static func qrCode() async throws -> QrCode {
         let j = try await Client.result("qrlogin_code")
         guard let code = j["code"].string, let url = j["url"].string else {
-            throw APIError(kind: .rejected, message: "کد QR دریافت نشد")
+            throw APIError(kind: .rejected, message: tr("کد QR دریافت نشد"))
         }
         return QrCode(code: code, url: url)
     }
@@ -25,7 +25,7 @@ enum API {
     static func menu() async throws -> MenuData { MenuData(try await Client.result("menu")) }
     static func single(_ postId: Int) async throws -> Title {
         guard let t = Title(try await Client.result("single", ["post_id": postId])) else {
-            throw APIError(kind: .rejected, message: "عنوان پیدا نشد")
+            throw APIError(kind: .rejected, message: tr("عنوان پیدا نشد"))
         }
         return t
     }

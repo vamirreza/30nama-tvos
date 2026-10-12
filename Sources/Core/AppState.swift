@@ -11,6 +11,7 @@ struct PlayerRequest: Identifiable {
 @MainActor
 final class Router: ObservableObject {
     @Published var player: PlayerRequest?
+    @Published var tab = 0
 
     /// With no file, the player resumes from the stream's saved episode and position.
     func play(_ postId: Int, fileId: Int? = nil) {

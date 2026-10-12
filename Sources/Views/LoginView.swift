@@ -45,15 +45,16 @@ struct LoginView: View {
         HStack(spacing: 110) {
             VStack(alignment: .leading, spacing: 34) {
                 Logo(height: 120)
-                Text("ورود به حساب").font(.appTitle)
+                Text(tr("ورود به حساب")).font(.appTitle)
                 VStack(alignment: .leading, spacing: 22) {
-                    step("۱", "با گوشی یا کامپیوتری که در سی‌نما وارد حساب‌تان شده‌اید، کد QR را اسکن کنید.")
-                    step("۲", "در صفحه‌ای که باز می‌شود، ورود این تلویزیون را تأیید کنید.")
+                    step(tr("۱"), tr("با گوشی یا کامپیوتری که در سی‌نما وارد حساب‌تان شده‌اید، کد QR را اسکن کنید."))
+                    step(tr("۲"), tr("در صفحه‌ای که باز می‌شود، ورود این تلویزیون را تأیید کنید."))
                 }
                 statusLine
                 HStack(spacing: 24) {
-                    Button("کد جدید") { attempt += 1 }.buttonStyle(.pillProminent)
-                    Button("تغییر کلید API") { app.phase = .needsKey }.buttonStyle(.pill)
+                    Button(tr("کد جدید")) { attempt += 1 }.buttonStyle(.pillProminent)
+                    Button(tr("تغییر کلید API")) { app.phase = .needsKey }.buttonStyle(.pill)
+                    LanguageButton()
                 }
             }
             .frame(maxWidth: 820, alignment: .leading)
@@ -87,8 +88,8 @@ struct LoginView: View {
             Logo(height: 64)
             Card {
                 VStack(spacing: 16) {
-                    Text("ورود به حساب").font(.appTitle2)
-                    Text("صفحهٔ سی‌نما را باز کنید، وارد حساب‌تان شوید و ورود این دستگاه را تأیید کنید.")
+                    Text(tr("ورود به حساب")).font(.appTitle2)
+                    Text(tr("صفحهٔ سی‌نما را باز کنید، وارد حساب‌تان شوید و ورود این دستگاه را تأیید کنید."))
                         .font(.appBody)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(Theme.textDim)
@@ -96,7 +97,7 @@ struct LoginView: View {
                     case .code(let url, _):
                         if let target = URL(string: url) {
                             Button { safari = SafariTarget(url: target) } label: {
-                                Label("ورود با سی‌نما", systemImage: "person.badge.key").frame(maxWidth: .infinity)
+                                Label(tr("ورود با سی‌نما"), systemImage: "person.badge.key").frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.pillProminent)
                         }
@@ -110,8 +111,9 @@ struct LoginView: View {
             }
             Spacer()
             HStack(spacing: 24) {
-                Button("کد جدید") { attempt += 1 }
-                Button("تغییر کلید API") { app.phase = .needsKey }
+                Button(tr("کد جدید")) { attempt += 1 }
+                Button(tr("تغییر کلید API")) { app.phase = .needsKey }
+                LanguageButton()
             }
             .buttonStyle(.plain)
             .font(.appCallout)
@@ -174,14 +176,14 @@ struct APIKeyView: View {
             Logo(height: Metrics.launchLogo)
             Card {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("کلید API").font(.appTitle2)
-                    Text("درخواست‌ها به یک c-api-key نیاز دارند؛ همان کلیدی که کلاینت وب رسمی تلویزیون سی‌نما (tv.30app.store) می‌فرستد. آن را از درخواست‌های شبکهٔ مرورگر بخوانید و اینجا وارد کنید. پیشنهاد می‌شود به‌جای تایپ روی دستگاه، آن را هنگام ساخت برنامه در Config/Secrets.xcconfig بگذارید.")
+                    Text(tr("کلید API")).font(.appTitle2)
+                    Text(tr("درخواست‌ها به یک c-api-key نیاز دارند؛ همان کلیدی که کلاینت وب رسمی تلویزیون سی‌نما (tv.30app.store) می‌فرستد. آن را از درخواست‌های شبکهٔ مرورگر بخوانید و اینجا وارد کنید. پیشنهاد می‌شود به‌جای تایپ روی دستگاه، آن را هنگام ساخت برنامه در Config/Secrets.xcconfig بگذارید."))
                         .font(.appBody)
                         .foregroundStyle(Theme.textDim)
                     TextField("c-api-key", text: $key)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    Button("ذخیره") { app.saveKey(key) }
+                    Button(tr("ذخیره")) { app.saveKey(key) }
                         .buttonStyle(.pillProminent)
                         .disabled(key.trimmed.isEmpty)
                 }
@@ -207,3 +209,16 @@ struct SafariView: UIViewControllerRepresentable {
     func updateUIViewController(_ controller: SFSafariViewController, context: Context) {}
 }
 #endif
+
+/// Switches between Persian and English before signing in.
+struct LanguageButton: View {
+    @EnvironmentObject private var settings: SettingsStore
+
+    var body: some View {
+        Button {
+            settings.language = settings.language == .fa ? .en : .fa
+        } label: {
+            Label(settings.language == .fa ? "English" : "فارسی", systemImage: "globe")
+        }
+    }
+}

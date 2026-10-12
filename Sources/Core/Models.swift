@@ -73,11 +73,13 @@ struct Title: Identifiable {
     }
 
     var name: String {
+        if Lang.current == .en, !english.isEmpty { return english }
         if let l = local?.trimmed, !l.isEmpty { return l }
         return english
     }
 
     var plot: String? {
+        if Lang.current == .en, let p = plotEnglish?.trimmed, !p.isEmpty { return p }
         if let p = plotLocal?.trimmed, !p.isEmpty { return p }
         return plotEnglish
     }

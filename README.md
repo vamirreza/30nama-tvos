@@ -2,7 +2,7 @@
 
 An unofficial [30nama](https://30nama.com) app for **Apple TV (tvOS 17+)**, a native SwiftUI port of
 [arastu/30nama-webos](https://github.com/arastu/30nama-webos). Browse, search and stream with Persian
-subtitles from the Siri Remote. The interface is Persian and right-to-left.
+subtitles from the Siri Remote. The interface is available in **Persian (right-to-left) and English**; switch it in Account → Language or on the sign-in screen. It starts in English on an English-language device and in Persian otherwise.
 
 It talks to the same v2 API as the official 30nama TV client, so it shows the same catalogue and
 keeps continue-watching in sync with your other devices.
@@ -130,6 +130,14 @@ subtitle and episode choices are transport-bar menus.
 API behaviour worth knowing (from the webOS project's notes): `streamonly` must be the string
 `"true"`; `user_list` with `action=add` toggles; `observer` answers 204 with no body; people pages
 only match exactly by IMDb id.
+
+## Languages
+
+Every string in the code is written in Persian and translated by `tr(_:)` using the table in
+`Sources/App/Localization.swift`. To add or fix an English string, edit that table; to add a language,
+add a case to `AppLanguage` and a table. Titles, plots and genres come from the 30nama API: in English
+the app shows the English title and synopsis when the API has one, genre names stay as the server
+sends them.
 
 ## Contributing
 

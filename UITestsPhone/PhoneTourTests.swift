@@ -20,6 +20,7 @@ final class PhoneTourTests: XCTestCase {
 
     private func launchApp() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "fa"]
         app.launch()
         return app
     }

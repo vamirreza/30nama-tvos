@@ -10,13 +10,13 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.rowVPad) {
                 if let h = home, !h.hero.isEmpty { HeroCarousel(titles: Array(h.hero.prefix(8))) }
-                TitleRow(title: "ادامه تماشا", items: continueList) { router.play($0.id) }
+                TitleRow(title: tr("ادامه تماشا"), items: continueList) { router.play($0.id) }
                 if let h = home {
-                    TitleRow(title: "پیشنهاد ویژه", items: h.hero)
-                    TitleRow(title: "پیشنهادی", items: h.suggested)
-                    TitleRow(title: "فیلم", items: h.movies)
-                    TitleRow(title: "سریال", items: h.series)
-                    TitleRow(title: "انیمه", items: h.anime)
+                    TitleRow(title: tr("پیشنهاد ویژه"), items: h.hero)
+                    TitleRow(title: tr("پیشنهادی"), items: h.suggested)
+                    TitleRow(title: tr("فیلم"), items: h.movies)
+                    TitleRow(title: tr("سریال"), items: h.series)
+                    TitleRow(title: tr("انیمه"), items: h.anime)
                 }
                 if home == nil {
                     if let error { ErrorNote(message: error) { Task { await load() } } }
@@ -141,7 +141,7 @@ private struct PhoneHero: View {
             ], startPoint: .top, endPoint: .bottom))
 
             VStack(spacing: 12) {
-                if title.persianSubtitle { Badge(text: "زیرنویس فارسی", kind: .glass, icon: "captions.bubble.fill") }
+                if title.persianSubtitle { Badge(text: tr("زیرنویس فارسی"), kind: .glass, icon: "captions.bubble.fill") }
                 Text(title.name)
                     .font(.appTitle2).multilineTextAlignment(.center).lineLimit(2)
                     .shadow(color: .black.opacity(0.7), radius: 10)
@@ -163,7 +163,7 @@ private struct PhoneHero: View {
                             .foregroundStyle(.white)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("جزئیات")
+                    .accessibilityLabel(tr("جزئیات"))
                 }
                 .padding(.top, 4)
             }
@@ -173,7 +173,7 @@ private struct PhoneHero: View {
     }
 
     private var playLabel: some View {
-        Label("پخش", systemImage: "play.fill")
+        Label(tr("پخش"), systemImage: "play.fill")
             .font(.appHeadline)
             .foregroundStyle(.black)
             .frame(width: 190, height: 50)
@@ -212,13 +212,13 @@ private struct Hero: View {
                 }
                 HStack(spacing: Metrics.itemSpacing) {
                     if title.isSeries {
-                        NavigationLink(value: Route.title(title.id)) { Label("پخش", systemImage: "play.fill") }
+                        NavigationLink(value: Route.title(title.id)) { Label(tr("پخش"), systemImage: "play.fill") }
                             .buttonStyle(.pillProminent)
                     } else {
-                        Button { router.play(title.id) } label: { Label("پخش", systemImage: "play.fill") }
+                        Button { router.play(title.id) } label: { Label(tr("پخش"), systemImage: "play.fill") }
                             .buttonStyle(.pillProminent)
                     }
-                    NavigationLink(value: Route.title(title.id)) { Label("جزئیات", systemImage: "info.circle") }
+                    NavigationLink(value: Route.title(title.id)) { Label(tr("جزئیات"), systemImage: "info.circle") }
                         .buttonStyle(.pill)
                 }
                 .padding(.bottom, Metrics.heroButtonsBottom)

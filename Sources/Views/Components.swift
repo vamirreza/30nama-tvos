@@ -60,7 +60,8 @@ struct PosterCell: View {
             }
         }
         .frame(width: width, height: width * 1.5)
-        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).strokeBorder(Theme.stroke, lineWidth: 1))
         .overlay(alignment: .bottom) {
             if title.progress > 0 {
                 ProgressView(value: min(1, title.progress / 100))

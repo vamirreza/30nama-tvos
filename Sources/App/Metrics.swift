@@ -86,11 +86,16 @@ enum Metrics {
 extension View {
     /// Poster/tile buttons draw their own artwork, so they take no button chrome.
     func posterButtonStyle() -> some View {
+        #if os(tvOS)
+        // The system focus effect: lift, parallax with the Siri Remote touch surface, and the specular shine.
+        buttonStyle(.borderless)
+        #else
         buttonStyle(.poster)
+        #endif
     }
 
     func tileButtonStyle() -> some View {
-        buttonStyle(.poster)
+        posterButtonStyle()
     }
 
     /// Lets a horizontal row's focus/hover scale spill past its bounds on tvOS only.

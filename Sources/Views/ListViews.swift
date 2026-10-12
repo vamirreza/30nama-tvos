@@ -139,6 +139,7 @@ struct BrowseView: View {
                             Text(m.name).font(.appTitle3Bold).shadow(color: .black.opacity(0.6), radius: 4).padding(16)
                         }
                         .frame(width: Metrics.tileWidth, height: Metrics.tileHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
                     }
                     .tileButtonStyle()
                 }

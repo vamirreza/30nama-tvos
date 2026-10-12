@@ -43,7 +43,7 @@ struct RootView: View {
             case .ready: MainTabs()
             }
         }
-        .task { await app.start() }
+        .task { TopShelfStore.trace("app: launched"); await app.start() }
         .fullScreenCover(item: $router.player) { request in
             PlayerScreen(request: request, userId: app.user?.id, settings: settings) { router.player = nil }
                 .ignoresSafeArea()

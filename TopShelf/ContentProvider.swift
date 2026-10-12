@@ -8,6 +8,7 @@ final class ContentProvider: TVTopShelfContentProvider {
 
     override func loadTopShelfContent() async -> TVTopShelfContent? {
         let items = TopShelfStore.load()
+        TopShelfStore.trace("extension: loaded \(items.count) items")
         guard !items.isEmpty else { return nil }
 
         // Artwork with the title drawn on it, so every card reads without relying on system text.
@@ -29,6 +30,7 @@ final class ContentProvider: TVTopShelfContentProvider {
             }
             return card
         }
+        TopShelfStore.trace("extension: returning \(cards.count) cards, \(files.count) drawn")
         guard !cards.isEmpty else { return nil }
         return TVTopShelfCarouselContent(style: .actions, items: cards)
     }
@@ -95,7 +97,7 @@ final class ContentProvider: TVTopShelfContentProvider {
             titleText.draw(with: CGRect(x: left, y: bottom - subSize.height - gap - titleSize.height, width: textWidth, height: titleSize.height), options: [.usesLineFragmentOrigin], context: nil)
         }
 
-        let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: TopShelfStore.group) ?? FileManager.default.temporaryDirectory
+        let dir = TopShelfStore.directory ?? FileManager.default.temporaryDirectory
         let file = dir.appendingPathComponent("shelf-\(item.id).jpg")
         do { try image.jpegData(compressionQuality: 0.85)?.write(to: file, options: .atomic) } catch {
             NSLog("[topshelf] write failed for \(item.id): \(error)")

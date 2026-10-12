@@ -99,9 +99,9 @@ struct PosterCell: View {
             Text(title.name).font(.appCalloutMedium).lineLimit(1)
             if let sub = title.episodeTitle {
                 Text(sub).font(.appCaption).foregroundStyle(Theme.textDim).lineLimit(1)
-            } else if title.imdb != nil || title.year != nil {
+            } else if (title.imdb ?? 0) > 0 || title.year != nil {
                 HStack(spacing: 6) {
-                    if let s = title.imdb {
+                    if let s = title.imdb, s > 0 {
                         Image(systemName: "star.fill").foregroundStyle(Theme.gold)
                         Text(String(format: "%.1f", s))
                     }

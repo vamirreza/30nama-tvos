@@ -192,8 +192,9 @@ struct Badge: View {
     var body: some View {
         HStack(spacing: 6) {
             if let icon { Image(systemName: icon) }
-            Text(text)
+            Text(text).lineLimit(1)
         }
+        .fixedSize()
         .font(.appCaption2Bold)
         .padding(.horizontal, Metrics.badgeH)
         .padding(.vertical, Metrics.badgeV)

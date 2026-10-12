@@ -16,6 +16,11 @@ final class PhoneTourTests: XCTestCase {
         Thread.sleep(forTimeInterval: wait)
         let png = XCUIScreen.main.screenshot().pngRepresentation
         try? png.write(to: shots.appendingPathComponent("\(name).png"))
+        // Also kept in the result bundle, which is how shots come off a real iPhone.
+        let attachment = XCTAttachment(data: png, uniformTypeIdentifier: "public.png")
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     private func launchApp() -> XCUIApplication {
@@ -28,6 +33,31 @@ final class PhoneTourTests: XCTestCase {
     private func tab(_ app: XCUIApplication, _ label: String) {
         let b = app.tabBars.buttons[label]
         if b.waitForExistence(timeout: 5) { b.tap() }
+    }
+
+    /// English layout on a signed-in phone: tabs are matched by position, not by name.
+    func testEnglishLayout() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["-30nama.language", "en"]
+        app.launch()
+        let bar = app.tabBars.firstMatch
+        guard bar.waitForExistence(timeout: 40) else { throw XCTSkip("Signed out") }
+        shot("n01-home", wait: 6)
+        app.swipeUp()
+        shot("n02-home-scrolled", wait: 2)
+        app.swipeDown(); app.swipeDown()
+
+        let tabs = bar.buttons
+        for (i, name) in ["search", "browse", "mylist", "account"].enumerated() where i + 1 < tabs.count {
+            tabs.element(boundBy: i + 1).tap()
+            shot("n0\(i + 3)-\(name)", wait: 3)
+        }
+        app.swipeUp()
+        shot("n07-account-lower", wait: 2)
+        tabs.element(boundBy: 0).tap()
+        // The hero's info button opens the title page.
+        let info = app.buttons["Details"]
+        if info.waitForExistence(timeout: 5) { info.tap(); shot("n08-title", wait: 4); app.swipeUp(); shot("n09-title-lower", wait: 2) }
     }
 
     func testLoginSheet() throws {

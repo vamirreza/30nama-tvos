@@ -212,7 +212,7 @@ struct ProfileView: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text(u.name).font(.appTitle2)
-                    HStack(spacing: 12) {
+                    ChipFlow(spacing: 10) {
                         Badge(text: tr("اشتراک %@", plans[u.type] ?? u.type), kind: .solid, icon: "crown.fill")
                         if let d = u.daysLeft { Badge(text: tr("%d روز باقی‌مانده", d), kind: .glass) }
                         if let e = u.expiresOn { Badge(text: tr("تا %@", e), kind: .glass) }

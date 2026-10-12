@@ -20,6 +20,10 @@ struct SiNamaTVApp: App {
                 .font(.appBody)
                 .tint(Theme.red)
                 .buttonStyle(.pill)
+                .onOpenURL { url in
+                    // sinama://play/<id> comes from the Top Shelf.
+                    if url.host == "play", let id = Int(url.lastPathComponent) { router.play(id) }
+                }
         }
     }
 }

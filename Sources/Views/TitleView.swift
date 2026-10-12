@@ -119,8 +119,10 @@ struct TitleView: View {
                 }
                 .frame(width: geo.size.width, height: geo.size.height * 0.8, alignment: .top)
                 .clipped()
-                .overlay(LinearGradient(colors: [Theme.background.opacity(0.55), Theme.background], startPoint: .top, endPoint: .bottom))
+                .overlay(LinearGradient(colors: [Theme.background.opacity(0.55), Theme.background.opacity(0.9)], startPoint: .top, endPoint: .bottom))
                 .overlay(LinearGradient(colors: [Theme.background.opacity(0.8), .clear], startPoint: .leading, endPoint: .trailing))
+                // Fade out to nothing so the brand background continues below without a seam.
+                .mask(LinearGradient(stops: [.init(color: .black, location: 0.45), .init(color: .clear, location: 1)], startPoint: .top, endPoint: .bottom))
             }
         }
         .ignoresSafeArea()

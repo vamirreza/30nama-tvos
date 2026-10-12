@@ -36,6 +36,11 @@ enum Metrics {
     static let stepBadge: CGFloat = 52
     static let emptyIcon: CGFloat = 64
     static let launchLogo: CGFloat = 130
+    static let dot: CGFloat = 10
+    static let dotActive: CGFloat = 34
+    static let heroDotsPad: CGFloat = 24
+    static let heroPlotLines = 3
+    static let heroButtonsBottom: CGFloat = 34
     #else
     static let pagePad: CGFloat = 16
     static let pageVPad: CGFloat = 12
@@ -70,6 +75,11 @@ enum Metrics {
     static let stepBadge: CGFloat = 32
     static let emptyIcon: CGFloat = 40
     static let launchLogo: CGFloat = 56
+    static let dot: CGFloat = 6
+    static let dotActive: CGFloat = 18
+    static let heroDotsPad: CGFloat = 8
+    static let heroPlotLines = 2
+    static let heroButtonsBottom: CGFloat = 18
     #endif
 }
 

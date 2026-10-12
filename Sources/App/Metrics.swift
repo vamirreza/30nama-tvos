@@ -134,3 +134,25 @@ extension View {
         #endif
     }
 }
+
+/// A focused tvOS card lifts off the page: a deep soft shadow below it and a small rise.
+private struct FloatOnFocus: ViewModifier {
+    @Environment(\.isFocused) private var focused
+
+    func body(content: Content) -> some View {
+        content
+            .shadow(color: .black.opacity(focused ? 0.6 : 0), radius: focused ? 40 : 0, y: focused ? 32 : 0)
+            .offset(y: focused ? -8 : 0)
+            .animation(.easeOut(duration: 0.22), value: focused)
+    }
+}
+
+extension View {
+    func floatOnFocus() -> some View {
+        #if os(tvOS)
+        modifier(FloatOnFocus())
+        #else
+        self
+        #endif
+    }
+}

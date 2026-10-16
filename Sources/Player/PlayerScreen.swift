@@ -17,6 +17,11 @@ final class PlayerHostController: UIViewController {
         playerVC.didMove(toParent: self)
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        engine?.fit(toHeight: view.bounds.height)
+    }
+
     override var preferredFocusEnvironments: [UIFocusEnvironment] { [playerVC] }
 
     #if os(iOS)

@@ -371,6 +371,16 @@ final class PlayerEngine {
     private let statusFontSize: CGFloat = 16
     #endif
 
+    /// Subtitle size follows the window on Mac and iPad, where the player is far larger than an iPhone's.
+    func fit(toHeight height: CGFloat) {
+        #if os(iOS)
+        guard UIDevice.current.userInterfaceIdiom != .phone else { return }
+        let scale = min(2.4, max(1, height / 390))
+        subtitleLabel.font = Vazir.uiFont(settings.subSize.pointSize * scale, .semibold)
+        statusLabel.font = Vazir.uiFont(statusFontSize * scale, .medium)
+        #endif
+    }
+
     private func setupOverlay() {
         playerVC.loadViewIfNeeded()
         guard let overlay = playerVC.contentOverlayView else { return }

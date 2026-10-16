@@ -97,6 +97,14 @@ open `SiNamaTV.xcodeproj`, pick the `SiNamaPhone` scheme. Layout sizes live in
 - The iPhone app presents itself to the API with the same client key as the TV client, so it needs
   the same `API_KEY`.
 
+## Mac
+
+The `SiNamaPhone` target also builds as a Mac Catalyst app. In Xcode pick the `SiNamaPhone` scheme
+and the "My Mac (Mac Catalyst)" destination, or from the terminal:
+`xcodebuild -scheme SiNamaPhone -destination 'platform=macOS,variant=Mac Catalyst' build`.
+It is the iPad layout in a resizable window. It has only had a smoke test on the Mac (it launches
+and shows the sign-in screen).
+
 ## Known gaps
 
 - **5.1 audio selection is a guess.** AVFoundation does not expose channel counts for HLS audio

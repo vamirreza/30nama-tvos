@@ -96,7 +96,14 @@ struct LoginView: View {
                     switch state {
                     case .code(let url, _):
                         if let target = URL(string: url) {
-                            Button { safari = SafariTarget(url: target) } label: {
+                            Button {
+                                #if targetEnvironment(macCatalyst)
+                                // The in-app Safari sheet does not work on the Mac: use the default browser.
+                                UIApplication.shared.open(target)
+                                #else
+                                safari = SafariTarget(url: target)
+                                #endif
+                            } label: {
                                 Label(tr("ورود با سی‌نما"), systemImage: "person.badge.key").frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.pillProminent)
